@@ -1,0 +1,25 @@
+{
+  "name": "@merlion/park",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "lint": "next lint",
+    "build": "next build",
+    "clean": "rimraf ./.next ./out"
+  },
+  "dependencies": {
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.30",
+    "@types/react": "^18.0.8",
+    "autoprefixer": "^10.4.5",
+    "eslint-config-next": "^12.1.5",
+    "next": "^12.1.5",
+    "postcss": "^8.4.12",
+    "prettier-plugin-tailwindcss": "^0.1.10",
+    "tailwindcss": "^3.0.24"
+  }
+}

@@ -1,0 +1,9 @@
+# production
+/build
+
+# next.js
+/.next/
+/out/
+
+# misc
+*.pem
