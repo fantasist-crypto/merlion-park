@@ -1,0 +1,26 @@
+{
+  "name": "@merlion/sdk",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "protoc": "protoc --ts_out src/proto --ts_opt long_type_string --proto_path $(PWD)/proto $(find $(PWD)/proto -iname \"*.proto\")",
+    "gen": "node scripts/generate.mjs",
+    "build": "tsc --build -w tsconfig.json"
+  },
+  "dependencies": {
+    "@cosmjs/encoding": "^0.28.4",
+    "@protobuf-ts/grpcweb-transport": "^2.5.0",
+    "@protobuf-ts/runtime": "^2.5.0",
+    "@protobuf-ts/runtime-rpc": "^2.5.0",
+    "bech32": "^2.0.0",
+    "bignumber.js": "^9.0.2"
+  },
+  "devDependencies": {
+    "@protobuf-ts/plugin": "^2.5.0",
+    "@protobuf-ts/protoc": "^2.5.0"
+  }
+}
