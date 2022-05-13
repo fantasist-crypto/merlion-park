@@ -16,7 +16,7 @@ import {
 } from '../proto/cosmos/distribution/v1beta1/query.client'
 import {
   QueryClient as EvidenceQueryClient,
-  IQueryClient as IEvidenceQueryClient
+  IQueryClient as IEvidenceQueryClient,
 } from '../proto/cosmos/evidence/v1beta1/query.client'
 import {
   QueryClient as FeegrantQueryClient,
@@ -55,7 +55,7 @@ import type { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 export interface Querier {
   auth: IAuthQueryClient
   authz: IAuthzQueryClient
-  bank: IBankQueryClient,
+  bank: IBankQueryClient
   distribution: IDistributionQueryClient
   evidence: IEvidenceQueryClient
   feegrant: IFeegrantQueryClient
