@@ -1,6 +1,8 @@
 import type { FC, ReactNode } from 'react'
 import Head from 'next/head'
 
+import { Header } from './header'
+
 export interface LayoutProps {
   title?: string
   description?: string
@@ -20,8 +22,8 @@ export const Layout: FC<LayoutProps> = ({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{title}</title>
       </Head>
-      <header />
-      <main>{children}</main>
+      <Header />
+      <main className="pb-16">{children}</main>
       <footer />
     </>
   )

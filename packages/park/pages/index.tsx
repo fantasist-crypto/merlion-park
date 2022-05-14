@@ -3,7 +3,9 @@ import { Layout } from '@/components'
 
 const Home: FC = () => (
   <Layout>
-    <h1>Welcome to Merlion Park!</h1>
+    <div className="flex justify-center py-24">
+      <h1 className="text-4xl font-extrabold">Welcome to Merlion Park!</h1>
+    </div>
   </Layout>
 )
 

@@ -9,11 +9,18 @@
     "clean": "rimraf ./.next ./out"
   },
   "dependencies": {
+    "@merlion/sdk": "workspace:^0.0.0",
+    "bignumber.js": "^9.0.2",
+    "clsx": "^1.1.1",
+    "fuse.js": "^6.6.2",
+    "numeral": "^2.0.6",
     "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react-dom": "^18.1.0",
+    "react-query": "^3.39.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.30",
+    "@types/numeral": "^2.0.2",
     "@types/react": "^18.0.8",
     "autoprefixer": "^10.4.5",
     "next": "^12.1.5",
