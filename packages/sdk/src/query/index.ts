@@ -50,6 +50,33 @@ import {
   QueryClient as UpgradeQueryClient,
   IQueryClient as IUpgradeQueryClient,
 } from '../proto/cosmos/upgrade/v1beta1/query.client'
+
+import {
+  QueryClient as OracleQueryClient,
+  IQueryClient as IOracleQueryClient,
+} from '../proto/merlion/oracle/v1/query.client'
+import {
+  QueryClient as ERC20QueryClient,
+  IQueryClient as IERC20QueryClient,
+} from '../proto/merlion/erc20/v1/query.client'
+import {
+  QueryClient as GaugeQueryClient,
+  IQueryClient as IGaugeQueryClient,
+} from '../proto/merlion/gauge/v1/query.client'
+import {
+  QueryClient as MakerQueryClient,
+  IQueryClient as IMakerQueryClient,
+} from '../proto/merlion/maker/v1/query.client'
+// TODO: merlion staking
+import {
+  QueryClient as VeQueryClient,
+  IQueryClient as IVeQueryClient,
+} from '../proto/merlion/ve/v1/query.client'
+import {
+  QueryClient as VoterQueryClient,
+  IQueryClient as IVoterQueryClient,
+} from '../proto/merlion/voter/v1/query.client'
+
 import type { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 
 export interface Querier {
@@ -66,6 +93,13 @@ export interface Querier {
   staking: IStakingQueryClient
   tendermint: ITendermintQueryClient
   upgrade: IUpgradeQueryClient
+
+  erc20: IERC20QueryClient
+  gauge: IGaugeQueryClient
+  maker: IMakerQueryClient
+  ve: IVeQueryClient
+  oracle: IOracleQueryClient
+  voter: IVoterQueryClient
 }
 
 export const getQuerier = (transport: GrpcWebFetchTransport): Querier => ({
@@ -82,4 +116,11 @@ export const getQuerier = (transport: GrpcWebFetchTransport): Querier => ({
   staking: new StakingQueryClient(transport),
   tendermint: new TendermintQueryClient(transport),
   upgrade: new UpgradeQueryClient(transport),
+
+  erc20: new ERC20QueryClient(transport),
+  gauge: new GaugeQueryClient(transport),
+  maker: new MakerQueryClient(transport),
+  oracle: new OracleQueryClient(transport),
+  ve: new VeQueryClient(transport),
+  voter: new VoterQueryClient(transport),
 })
