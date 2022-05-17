@@ -4,7 +4,7 @@ import { Html, Head, Main, NextScript } from 'next/document'
 
 const Document: FC<DocumentProps> = () => {
   return (
-    <Html>
+    <Html className="dark">
       <Head>
         <link rel="icon" href="/favicon.svg" />
       </Head>

@@ -3,8 +3,8 @@ import Link from 'next/link'
 import BigNumber from 'bignumber.js'
 import numeral from 'numeral'
 import Fuse from 'fuse.js'
-import clsx from 'clsx'
 
+import { classNames } from '@/utils'
 import { Layout } from '@/components'
 import { LION_DECIMAL } from '@/constants'
 import { useValidators, usePool } from '@/hooks'
@@ -41,7 +41,7 @@ export const Validators: FC = () => {
   const validators = useMemo(
     () =>
       validatorsData?.validators.map((v) => {
-        const bondedTokens = poolData.pool?.bondedTokens
+        const bondedTokens = poolData?.pool?.bondedTokens
         const votingPower = bondedTokens
           ? new BigNumber(v.tokens).div(bondedTokens).toFixed(4)
           : null
@@ -85,8 +85,8 @@ export const Validators: FC = () => {
         <div className="flex items-center pt-8 pb-4">
           <h2 className="text-4xl font-semibold">Validators</h2>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-8 pb-4">
-          <div className="mb-4 flex items-center rounded-lg border border-slate-200 bg-white px-2">
+        <div className="rounded-lg border border-slate-200 bg-white p-8 pb-4 dark:border-slate-700 dark:bg-slate-800">
+          <div className="mb-4 flex items-center rounded-lg border border-slate-200 px-2 dark:border-slate-700">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -110,7 +110,7 @@ export const Validators: FC = () => {
           </div>
           <table className="min-w-full table-auto border-collapse text-right">
             <thead>
-              <tr className="border-b border-b-slate-200 text-xs">
+              <tr className="border-b border-b-slate-200 text-xs dark:border-b-slate-700">
                 <th className="py-3 text-left">Moniker</th>
                 <th className="">Voting power</th>
                 <th className="">Commission</th>
@@ -119,8 +119,8 @@ export const Validators: FC = () => {
               </tr>
             </thead>
             <tbody
-              className={clsx(
-                'divide-y divide-slate-200',
+              className={classNames(
+                'divide-y divide-slate-200 dark:divide-slate-700',
                 isLoading && 'animate-pulse',
               )}
             >

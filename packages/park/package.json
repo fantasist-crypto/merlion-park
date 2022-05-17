@@ -9,9 +9,10 @@
     "clean": "rimraf ./.next ./out"
   },
   "dependencies": {
+    "@headlessui/react": "^1.6.1",
+    "@heroicons/react": "^1.0.6",
     "@merlion/sdk": "workspace:^0.0.0",
     "bignumber.js": "^9.0.2",
-    "clsx": "^1.1.1",
     "fuse.js": "^6.6.2",
     "numeral": "^2.0.6",
     "react": "^18.1.0",
@@ -23,7 +24,7 @@
     "@types/numeral": "^2.0.2",
     "@types/react": "^18.0.8",
     "autoprefixer": "^10.4.5",
-    "next": "^12.1.5",
+    "next": "^12.1.6",
     "postcss": "^8.4.12",
     "tailwindcss": "^3.0.24"
   }
