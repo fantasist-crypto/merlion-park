@@ -1,12 +1,13 @@
 import type { FC } from 'react'
-import { Layout } from '@/components'
+import type { GetStaticProps } from 'next'
 
-const Home: FC = () => (
-  <Layout>
-    <div className="flex justify-center py-24">
-      <h1 className="text-4xl font-extrabold">Welcome to Merlion Park!</h1>
-    </div>
-  </Layout>
-)
+export const getStaticProps: GetStaticProps = () => ({
+  redirect: {
+    destination: '/validators',
+    permanent: false,
+  },
+})
+
+const Home: FC = () => null
 
 export default Home
