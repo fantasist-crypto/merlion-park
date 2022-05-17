@@ -1,10 +1,10 @@
 import { FC, useMemo } from 'react'
+import BigNumber from 'bignumber.js'
 import numeral from 'numeral'
-import clsx from 'clsx'
 import type { Validator } from '@merlion/sdk/dist/proto/cosmos/staking/v1beta1/staking'
 
 import { useValidatorRewards } from '@/hooks'
-import BigNumber from 'bignumber.js'
+import { classNames } from '@/utils'
 
 export interface ValidatorRewardsProps {
   validator: Validator
@@ -28,9 +28,9 @@ export const ValidatorRewards: FC<ValidatorRewardsProps> = ({
   }, [data?.amount, validator.tokens])
 
   return (
-    <div className={clsx('flex h-6 justify-end', className)}>
+    <div className={classNames('flex h-6 justify-end', className)}>
       <div
-        className={clsx(
+        className={classNames(
           'uppercase',
           isLoading && 'w-32 animate-pulse rounded bg-slate-100',
         )}

@@ -1,9 +1,9 @@
 import { FC, useMemo } from 'react'
 import BigNumber from 'bignumber.js'
 import numeral from 'numeral'
-import clsx from 'clsx'
 
 import { useMissCounter, useOracleParams } from '@/hooks'
+import { classNames } from '@/utils'
 
 export interface MissCounterProps {
   validatorAddr: string
@@ -28,9 +28,9 @@ export const MissCounter: FC<MissCounterProps> = ({
   )
 
   return (
-    <div className={clsx('flex h-6 justify-end', className)}>
+    <div className={classNames('flex h-6 justify-end', className)}>
       <div
-        className={clsx(
+        className={classNames(
           'uppercase',
           isMissCounterLoading &&
             isOracleParamsLoading &&

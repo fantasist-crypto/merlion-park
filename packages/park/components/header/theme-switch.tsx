@@ -1,7 +1,6 @@
 import { FC, Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { SunIcon, MoonIcon } from '@heroicons/react/outline'
-import clsx from 'clsx'
 
 import { Theme, useTheme } from '@/hooks'
 import { classNames } from '@/utils'
@@ -43,7 +42,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
           {({ close }) => (
             <>
               <li
-                className={clsx(
+                className={classNames(
                   'flex cursor-pointer items-center px-2 py-1',
                   theme === 'dark' && 'text-cyan-500',
                 )}
@@ -54,7 +53,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
               </li>
 
               <li
-                className={clsx(
+                className={classNames(
                   'flex cursor-pointer items-center px-2 py-1',
                   theme === 'light' && 'text-cyan-500',
                 )}
@@ -65,7 +64,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
               </li>
 
               <li
-                className={clsx(
+                className={classNames(
                   'flex cursor-pointer items-center px-2 py-1',
                   theme === null && 'text-cyan-500',
                 )}
