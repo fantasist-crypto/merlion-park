@@ -4,19 +4,21 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/"
+    "dist/*"
   ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
-    "protoc": "protoc --ts_out src/proto --ts_opt long_type_string --proto_path $(PWD)/proto $(find $(PWD)/proto -iname \"*.proto\")",
-    "dev": "tsc --build -w tsconfig.json",
-    "build": "tsc --build tsconfig.json",
+    "dev": "tsc -w",
+    "build": "tsc -b",
     "clean": "rimraf ./dist"
   },
   "dependencies": {
     "@cosmjs/encoding": "^0.28.4",
+    "@merlion/proto": "workspace:^0.0.0",
     "@protobuf-ts/grpcweb-transport": "^2.5.0",
     "@protobuf-ts/runtime": "^2.5.0",
-    "@protobuf-ts/runtime-rpc": "^2.5.0",
     "bech32": "^2.0.0",
     "bignumber.js": "^9.0.2"
   },

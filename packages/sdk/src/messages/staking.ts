@@ -2,16 +2,16 @@ import { fromBase64 } from '@cosmjs/encoding'
 import { bech32 } from 'bech32'
 import BigNumber from 'bignumber.js'
 
-import { Any } from '../proto/google/protobuf/any'
-import { PubKey } from '../proto/cosmos/crypto/ed25519/keys'
-import { Description } from '../proto/cosmos/staking/v1beta1/staking'
+import { Any } from '@merlion/proto/google/protobuf/any'
+import { PubKey } from '@merlion/proto/cosmos/crypto/ed25519/keys'
+import { Description } from '@merlion/proto/cosmos/staking/v1beta1/staking'
 import {
   MsgUndelegate as MsgUndelegatePB,
   MsgBeginRedelegate as MsgBeginRedelegatePB,
   MsgDelegate as MsgDelegatePB,
   MsgEditValidator as MsgEditValidatorPB,
   MsgCreateValidator as MsgCreateValidatorPB,
-} from '../proto/cosmos/staking/v1beta1/tx'
+} from '@merlion/proto/cosmos/staking/v1beta1/tx'
 import { AminoMsg, Coin, Msg, MsgParams, ProtoMsg } from './types'
 
 /**
