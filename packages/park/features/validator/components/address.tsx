@@ -1,8 +1,9 @@
 import type { FC } from 'react'
+import type { Any } from '@merlion/proto/google/protobuf/any'
+import { decodePubKey } from '@merlion/sdk'
+import { FiKey, FiLink, FiUser } from 'react-icons/fi'
 import { ExternalLinkIcon, DuplicateIcon } from '@heroicons/react/outline'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
-import type { Any } from '@merlion/proto/google/protobuf/any'
-import { FiKey, FiLink, FiUser } from 'react-icons/fi'
 
 import { validatorToDelegatorAddress } from '@/utils'
 
@@ -15,6 +16,8 @@ export const Address: FC<AddressProps> = ({
   validatorAddr,
   validatorPubKey,
 }) => {
+  const pubKey = decodePubKey(validatorPubKey)
+
   return (
     <div className="rounded-md bg-white px-6 dark:bg-slate-700">
       <h3 className="border-b py-4 text-lg font-medium dark:border-b-slate-600">
@@ -58,12 +61,11 @@ export const Address: FC<AddressProps> = ({
           <div>
             <div className="text-sm font-medium">
               Consensus Public Key
-              <span className="text-xs">({validatorPubKey?.typeUrl})</span>
+              <span className="text-xs">({pubKey?.type})</span>
             </div>
-            {/* TODO: decode public key */}
-            <CopyToClipboard text={validatorPubKey}>
+            <CopyToClipboard text={pubKey?.value ?? ''}>
               <div className="flex cursor-pointer items-center text-xs text-slate-600 dark:text-slate-400">
-                <span>{validatorPubKey?.value.slice(0, 16)}...</span>
+                {pubKey?.value}
                 &nbsp;
                 <DuplicateIcon className="h-4 w-4 hover:text-cyan-600" />
               </div>

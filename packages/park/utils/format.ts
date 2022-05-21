@@ -39,7 +39,9 @@ export const formatCommissionRates = (
 ): CommissionRates => {
   if (!rates) return { rate: '0', maxRate: '0', maxChangeRate: '0' }
 
-  const maxChangeRate = new BigNumber(rates.maxChangeRate).div(DECIMAL).toFixed(4)
+  const maxChangeRate = new BigNumber(rates.maxChangeRate)
+    .div(DECIMAL)
+    .toFixed(4)
   const maxRate = new BigNumber(rates.maxRate).div(DECIMAL).toFixed(4)
   const rate = new BigNumber(rates.rate).div(DECIMAL).toFixed(4)
   return { rate, maxRate, maxChangeRate }
