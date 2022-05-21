@@ -10,7 +10,7 @@ export const getMsgDecoderRegistry = () => {
   const registry: MsgDecoderRegistry = new Map()
 
   registry.set(`/${MsgGrant.typeName}`, MsgGrant)
-  registry.set(`${MsgSend.typeName}`, MsgSend)
+  registry.set(`/${MsgSend.typeName}`, MsgSend)
 
   return Object.freeze(registry)
 }

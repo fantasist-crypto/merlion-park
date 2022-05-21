@@ -1,5 +1,8 @@
 import type { SimulateResponse } from '@merlion/proto/cosmos/tx/v1beta1/service'
-import type { AuthInfo, Tx as CosmosTx } from '@merlion/proto/cosmos/tx/v1beta1/tx'
+import type {
+  AuthInfo,
+  Tx as CosmosTx,
+} from '@merlion/proto/cosmos/tx/v1beta1/tx'
 import type { Any } from '@merlion/proto/google/protobuf/any'
 
 import type { Msg } from './messages'
