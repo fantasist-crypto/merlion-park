@@ -85,8 +85,8 @@ export const Validators: FC = () => {
         <div className="flex items-center pt-8 pb-4">
           <h2 className="text-4xl font-semibold">Validators</h2>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-8 pb-4 dark:border-slate-700 dark:bg-slate-800">
-          <div className="mb-4 flex items-center rounded-lg border border-slate-200 px-2 dark:border-slate-700">
+        <div className="rounded-lg border border-slate-200 bg-white p-8 pb-4 dark:border-slate-600 dark:bg-slate-700">
+          <div className="mb-4 flex items-center rounded-lg border border-slate-200 px-2 dark:border-slate-600">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -110,7 +110,7 @@ export const Validators: FC = () => {
           </div>
           <table className="min-w-full table-auto border-collapse text-right">
             <thead>
-              <tr className="border-b border-b-slate-200 text-xs dark:border-b-slate-700">
+              <tr className="border-b border-b-slate-200 text-xs dark:border-b-slate-600">
                 <th className="py-3 text-left">Moniker</th>
                 <th className="">Voting power</th>
                 <th className="">Commission</th>
@@ -120,7 +120,7 @@ export const Validators: FC = () => {
             </thead>
             <tbody
               className={classNames(
-                'divide-y divide-slate-200 dark:divide-slate-700',
+                'divide-y divide-slate-200 dark:divide-slate-600',
                 isLoading && 'animate-pulse',
               )}
             >

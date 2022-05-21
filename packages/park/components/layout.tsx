@@ -23,7 +23,7 @@ export const Layout: FC<LayoutProps> = ({
         <title>{title}</title>
       </Head>
       <Header />
-      <main className="pb-16">{children}</main>
+      <main className="py-16 px-6 xl:px-0">{children}</main>
       <footer />
     </>
   )
