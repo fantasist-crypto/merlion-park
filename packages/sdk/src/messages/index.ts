@@ -4,6 +4,7 @@ import { MsgGrant } from '@merlion/proto/cosmos/authz/v1beta1/tx'
 export * from './types'
 
 // TODO: remove any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MsgDecoderRegistry = Map<string, MessageType<any>>
 
 export const getMsgDecoderRegistry = () => {

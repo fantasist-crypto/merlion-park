@@ -1,12 +1,12 @@
 export interface ProtoMsg {
   typeUrl: string
-  value: any
+  value: unknown
   encode(): Uint8Array
 }
 
 export type AminoMsg = {
   type: string
-  value: any
+  value: unknown
 }
 
 export interface Msg {
@@ -14,6 +14,7 @@ export interface Msg {
   toAmino(): Promise<AminoMsg>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface MsgParams {}
 
 /////////////////////////////////////////////////////

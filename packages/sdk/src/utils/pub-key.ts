@@ -1,46 +1,96 @@
 import { fromBase64, toBase64 } from '@cosmjs/encoding'
-import {
-  Ed25519Pubkey,
-  encodeSecp256k1Pubkey,
-  MultisigThresholdPubkey,
-  SinglePubkey,
-} from '@cosmjs/amino'
 import type { Any } from '@merlion/proto/google/protobuf/any'
 import { LegacyAminoPubKey } from '@merlion/proto/cosmos/crypto/multisig/keys'
-import { PubKey as Secp256k1PubKey } from '@merlion/proto/cosmos/crypto/secp256k1/keys'
-import { PubKey as EthSecp256k1PubKey } from '@merlion/proto/ethermint/crypto/v1/ethsecp256k1/keys'
+import { PubKey as Secp256k1PubKeyPB } from '@merlion/proto/cosmos/crypto/secp256k1/keys'
+import { PubKey as EthSecp256k1PubKeyPB } from '@merlion/proto/ethermint/crypto/v1/ethsecp256k1/keys'
 
-export function encodeEd25519PubKey(pubKey: Uint8Array): Ed25519Pubkey {
-  if (pubKey.length !== 32) {
-    throw new Error("Public key must be compressed Ed25519")
-  }
-  return  {
-    type: 'tendermint/PubKeyEd25519',
-    value: toBase64(pubKey)
+export interface PubKey {
+  readonly type: typeof PubKeyType[keyof typeof PubKeyType]
+  readonly value: unknown
+}
+
+export const PubKeyType = {
+  EthSecp256k1: 'ethermint/PubKeyEthSecp256k1' as const,
+  Secp256k1: 'tendermint/PubKeySecp256k1' as const,
+  Ed25519: 'tendermint/PubKeyEd25519' as const,
+  Sr25519: 'tendermint/PubKeySr25519' as const,
+  MultisigThreshold: 'tendermint/PubKeyMultisigThreshold' as const,
+}
+
+export interface SinglePubKey extends PubKey {
+  readonly type:
+    | typeof PubKeyType.EthSecp256k1
+    | typeof PubKeyType.Secp256k1
+    | typeof PubKeyType.Ed25519
+    | typeof PubKeyType.Sr25519
+  /**
+   * The base64 encoding of the Amino binary encoded public key.
+   */
+  readonly value: string
+}
+
+export interface EthSecp256k1PubKey extends SinglePubKey {
+  readonly type: 'ethermint/PubKeyEthSecp256k1'
+  readonly value: string
+}
+
+export interface Secp256k1PubKey extends SinglePubKey {
+  readonly type: 'tendermint/PubKeySecp256k1'
+  readonly value: string
+}
+
+export interface Ed25519PubKey extends SinglePubKey {
+  readonly type: 'tendermint/PubKeyEd25519'
+  readonly value: string
+}
+
+export interface MultisigThresholdPubKey extends PubKey {
+  readonly type: 'tendermint/PubKeyMultisigThreshold'
+  readonly value: {
+    /** A string-encoded integer */
+    readonly threshold: string
+    readonly pubKeys: readonly SinglePubKey[]
   }
 }
 
-export interface PubKey {
-  type: string
-  value: any
+export function encodeSecp256k1PubKey(pubKey: Uint8Array): Secp256k1PubKey {
+  if (pubKey.length !== 33 || (pubKey[0] !== 0x02 && pubKey[0] !== 0x03)) {
+    throw new Error(
+      'Public key must be compressed secp256k1, i.e. 33 bytes starting with 0x02 or 0x03',
+    )
+  }
+  return {
+    type: PubKeyType.Secp256k1,
+    value: toBase64(pubKey),
+  }
+}
+
+export function encodeEd25519PubKey(pubKey: Uint8Array): Ed25519PubKey {
+  if (pubKey.length !== 32) {
+    throw new Error('Public key must be compressed Ed25519, i.e. 32 bytes')
+  }
+  return {
+    type: 'tendermint/PubKeyEd25519',
+    value: toBase64(pubKey),
+  }
 }
 
 export function encodePubKey(pubKey: PubKey): Any {
   if (isSecp256k1PubKey(pubKey)) {
-    const pubKeyProto: Secp256k1PubKey = {
+    const pubKeyProto: Secp256k1PubKeyPB = {
       key: fromBase64(pubKey.value),
     }
     return {
       typeUrl: '/cosmos.crypto.secp256k1.PubKey',
-      value: Uint8Array.from(Secp256k1PubKey.toBinary(pubKeyProto)),
+      value: Uint8Array.from(Secp256k1PubKeyPB.toBinary(pubKeyProto)),
     }
   } else if (isEthSecp256k1PubKey(pubKey)) {
-    const pubKeyProto: EthSecp256k1PubKey = {
+    const pubKeyProto: EthSecp256k1PubKeyPB = {
       key: fromBase64(pubKey.value),
     }
     return {
       typeUrl: '/ethermint.crypto.v1.ethsecp256k1.PubKey',
-      value: EthSecp256k1PubKey.toBinary(pubKeyProto),
+      value: EthSecp256k1PubKeyPB.toBinary(pubKeyProto),
     }
   } else if (isMultisigThresholdPubKey(pubKey)) {
     const pubKeyProto: LegacyAminoPubKey = {
@@ -52,58 +102,66 @@ export function encodePubKey(pubKey: PubKey): Any {
       value: Uint8Array.from(LegacyAminoPubKey.toBinary(pubKeyProto)),
     }
   } else {
-    throw new Error(`PubKey type ${pubKey.type} not recognized`)
+    throw new Error(`Public key type ${pubKey.type} not recognized`)
   }
 }
 
-function decodeSinglePubKey(pubkey: Any): SinglePubkey {
-  switch (pubkey.typeUrl) {
-    case "/cosmos.crypto.secp256k1.PubKey": {
-      const { key } = Secp256k1PubKey.fromBinary(pubkey.value);
-      return encodeSecp256k1Pubkey(key);
+function decodeSinglePubKey(pubKey: Any): SinglePubKey {
+  switch (pubKey.typeUrl) {
+    case '/cosmos.crypto.secp256k1.PubKey': {
+      const { key } = Secp256k1PubKeyPB.fromBinary(pubKey.value)
+      return encodeSecp256k1PubKey(key)
     }
-    case "/cosmos.crypto.ed25519.PubKey": {
-      const { key } = EthSecp256k1PubKey.fromBinary(pubkey.value)
+    case '/cosmos.crypto.ed25519.PubKey': {
+      const { key } = EthSecp256k1PubKeyPB.fromBinary(pubKey.value)
       return encodeEd25519PubKey(key)
     }
     default:
-      throw new Error(`Pubkey type_url ${pubkey.typeUrl} not recognized as single public key type`);
+      throw new Error(
+        `PubKey type_url ${pubKey.typeUrl} not recognized as single public key type`,
+      )
   }
 }
 
-export function decodePubKey(pubkey?: Any | null): SinglePubkey | MultisigThresholdPubkey | null {
-  if (!pubkey || !pubkey.value) {
-    return null;
+export function decodePubKey(
+  pubKey?: Any | null,
+): SinglePubKey | MultisigThresholdPubKey | null {
+  if (!pubKey || !pubKey.value) {
+    return null
   }
 
-  switch (pubkey.typeUrl) {
-    case "/cosmos.crypto.secp256k1.PubKey":
-    case "/cosmos.crypto.ed25519.PubKey": {
-      return decodeSinglePubKey(pubkey);
+  switch (pubKey.typeUrl) {
+    case '/cosmos.crypto.secp256k1.PubKey':
+    case '/cosmos.crypto.ed25519.PubKey': {
+      return decodeSinglePubKey(pubKey)
     }
-    case "/cosmos.crypto.multisig.LegacyAminoPubKey": {
-      const { threshold, publicKeys } = LegacyAminoPubKey.fromBinary(pubkey.value);
+    case '/cosmos.crypto.multisig.LegacyAminoPubKey': {
+      const { threshold, publicKeys } = LegacyAminoPubKey.fromBinary(
+        pubKey.value,
+      )
       return {
-        type: "tendermint/PubKeyMultisigThreshold",
+        type: 'tendermint/PubKeyMultisigThreshold',
         value: {
           threshold: threshold.toString(),
-          pubkeys: publicKeys.map(decodeSinglePubKey),
+          pubKeys: publicKeys.map(decodeSinglePubKey),
         },
       }
     }
     default:
-      throw new Error(`Pubkey type_url ${pubkey.typeUrl} not recognized`);
+      throw new Error(`PubKey type_url ${pubKey.typeUrl} not recognized`)
   }
 }
 
-function isSecp256k1PubKey(pubKey: PubKey): boolean {
+function isSecp256k1PubKey(pubKey: PubKey): pubKey is Secp256k1PubKey {
   return pubKey.type === 'tendermint/PubKeySecp256k1'
 }
 
-function isEthSecp256k1PubKey(pubKey: PubKey): boolean {
+function isEthSecp256k1PubKey(pubKey: PubKey): pubKey is EthSecp256k1PubKey {
   return pubKey.type === 'ethermint/PubKeyEthSecp256k1'
 }
 
-function isMultisigThresholdPubKey(pubKey: PubKey): boolean {
+function isMultisigThresholdPubKey(
+  pubKey: PubKey,
+): pubKey is MultisigThresholdPubKey {
   return pubKey.type === 'tendermint/PubKeyMultisigThreshold'
 }
