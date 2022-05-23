@@ -65,7 +65,7 @@ export const Address: FC<AddressProps> = ({
             </div>
             <CopyToClipboard text={pubKey?.value ?? ''}>
               <div className="flex cursor-pointer items-center text-xs text-slate-600 dark:text-slate-400">
-                {pubKey?.value}
+                {pubKey?.value as string}
                 &nbsp;
                 <DuplicateIcon className="h-4 w-4 hover:text-cyan-600" />
               </div>
