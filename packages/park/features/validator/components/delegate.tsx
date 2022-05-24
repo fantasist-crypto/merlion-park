@@ -1,10 +1,11 @@
 import { FC, Fragment, useCallback, useMemo, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'react-hot-toast'
 import BigNumber from 'bignumber.js'
 
 import { useAsync, useKeplr, useMerlionClient } from '@/hooks'
-import { classNames, formatCoin, parseCoin } from '@/utils'
+import { classNames, formatCoin, getErrorMessage, parseCoin } from '@/utils'
 import { useBalance } from '@/hooks'
 
 export interface DelegateProps {
@@ -22,6 +23,7 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
   const { data } = useBalance(address, 'alion')
   const balance = useMemo(() => data && formatCoin(data), [data])
 
+  // TODO
   const { execute, status } = useAsync(async ({ amount }: Inputs) => {
     try {
       const res = await merlionClient?.tx.staking.delegate({
@@ -31,7 +33,7 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
       })
       console.log(res)
     } catch (error) {
-      console.log(error)
+      toast.error(getErrorMessage(error).message)
     }
   })
 
@@ -42,7 +44,7 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
     setValue,
     formState: { errors },
   } = useForm<Inputs>({
-    defaultValues: { amount: '0' },
+    defaultValues: { amount: '' },
   })
 
   const handleDelegate = async (data: Inputs) => {

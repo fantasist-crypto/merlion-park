@@ -1,14 +1,16 @@
 import type { FC } from 'react'
 import type { AppProps } from 'next/app'
-import { QueryClientProvider } from 'react-query'
 import Script from 'next/script'
+import { QueryClientProvider } from 'react-query'
 
 import { queryClient } from '@/constants'
+import { CustomToaster } from '@/components'
 import '@/styles/index.css'
 
 const App: FC<AppProps> = ({ Component, pageProps }) => (
   <QueryClientProvider client={queryClient}>
     <Component {...pageProps} />
+    <CustomToaster />
     <Script
       id="update-html-classes"
       dangerouslySetInnerHTML={{

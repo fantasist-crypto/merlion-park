@@ -1,10 +1,11 @@
 import { FC, Fragment, useCallback, useMemo, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'react-hot-toast'
 import BigNumber from 'bignumber.js'
 
 import { useAsync, useDelegation, useKeplr, useMerlionClient } from '@/hooks'
-import { classNames, formatCoin, parseCoin } from '@/utils'
+import { classNames, formatCoin, getErrorMessage, parseCoin } from '@/utils'
 
 export interface UndelegateProps {
   validatorAddr?: string
@@ -25,6 +26,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
     [balance],
   )
 
+  // TODO
   const { execute, status } = useAsync(async ({ amount }: Inputs) => {
     try {
       const res = await merlionClient?.tx.staking.undelegate({
@@ -34,7 +36,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
       })
       console.log(res)
     } catch (error) {
-      console.log(error)
+      toast.error(getErrorMessage(error).message)
     }
   })
 
@@ -45,7 +47,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
     setValue,
     formState: { errors },
   } = useForm<Inputs>({
-    defaultValues: { amount: '0' },
+    defaultValues: { amount: '' },
   })
 
   const handleUndelegate = async (data: Inputs) => {
@@ -147,7 +149,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
                       />
                       <button
                         type="button"
-                        className="absolute right-4 rounded-full bg-cyan-600 px-2 py-1 text-xs font-medium"
+                        className="absolute right-4 rounded-full bg-cyan-600 px-2 py-1 text-xs font-medium text-slate-50"
                         onClick={handleMax}
                       >
                         MAX
@@ -159,7 +161,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
                     <div></div>
                     <button
                       className={classNames(
-                        'mt-3 block w-full rounded-full bg-cyan-600 py-3 font-medium',
+                        'mt-3 block w-full rounded-full bg-cyan-600 py-3 font-medium text-slate-50',
                         status === 'pending' && 'cursor-progress',
                       )}
                       disabled={status === 'pending'}

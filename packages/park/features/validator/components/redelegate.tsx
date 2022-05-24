@@ -1,6 +1,7 @@
 import { FC, Fragment, useCallback, useMemo, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'react-hot-toast'
 import BigNumber from 'bignumber.js'
 
 import {
@@ -10,7 +11,7 @@ import {
   useMerlionClient,
   useValidators,
 } from '@/hooks'
-import { classNames, formatCoin, parseCoin } from '@/utils'
+import { classNames, formatCoin, getErrorMessage, parseCoin } from '@/utils'
 
 export interface RedelegateProps {
   validatorAddr?: string
@@ -35,6 +36,7 @@ export const Redelegate: FC<RedelegateProps> = ({ validatorAddr }) => {
     [balance],
   )
 
+  // TODO
   const { execute, status } = useAsync(
     async ({ amount, validatorDstAddress }: Inputs) => {
       try {
@@ -46,7 +48,7 @@ export const Redelegate: FC<RedelegateProps> = ({ validatorAddr }) => {
         })
         console.log(res)
       } catch (error) {
-        console.log(error)
+        toast.error(getErrorMessage(error).message)
       }
     },
   )
@@ -58,7 +60,7 @@ export const Redelegate: FC<RedelegateProps> = ({ validatorAddr }) => {
     setValue,
     formState: { errors },
   } = useForm<Inputs>({
-    defaultValues: { amount: '0' },
+    defaultValues: { amount: '' },
   })
 
   const handleRedelegate = async (data: Inputs) => {
