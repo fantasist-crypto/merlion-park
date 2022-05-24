@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import { FC, useEffect } from 'react'
 import Link from 'next/link'
 import { MdAccountBalanceWallet } from 'react-icons/md'
 
@@ -7,7 +7,11 @@ import { classNames, shortenAddress } from '@/utils'
 import { ThemeSwitch } from './theme-switch'
 
 export const Header: FC = () => {
-  const { address, isActive, connect } = useKeplr(true)
+  const { address, isActive, connect } = useKeplr()
+
+  useEffect(() => {
+    connect()
+  }, [connect])
 
   return (
     <header className={classNames('bg-white dark:bg-slate-700')}>
