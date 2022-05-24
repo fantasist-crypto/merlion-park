@@ -53,6 +53,20 @@ export interface MultisigThresholdPubKey extends PubKey {
   }
 }
 
+export function encodeEthSecp256k1PubKey(
+  pubKey: Uint8Array,
+): EthSecp256k1PubKey {
+  if (pubKey.length !== 33 || (pubKey[0] !== 0x02 && pubKey[0] !== 0x03)) {
+    throw new Error(
+      'Public key must be compressed secp256k1, i.e. 33 bytes starting with 0x02 or 0x03',
+    )
+  }
+  return {
+    type: 'ethermint/PubKeyEthSecp256k1',
+    value: toBase64(pubKey),
+  }
+}
+
 export function encodeSecp256k1PubKey(pubKey: Uint8Array): Secp256k1PubKey {
   if (pubKey.length !== 33 || (pubKey[0] !== 0x02 && pubKey[0] !== 0x03)) {
     throw new Error(

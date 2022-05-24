@@ -5,7 +5,16 @@ import type {
 } from '@merlion/proto/cosmos/tx/v1beta1/tx'
 import type { Any } from '@merlion/proto/google/protobuf/any'
 
-import type { Msg } from './messages'
+import type {
+  Msg,
+  MsgBeginRedelegateParams,
+  MsgCreateValidatorParams,
+  MsgDelegateParams,
+  MsgEditValidatorParams,
+  MsgMultiSendParams,
+  MsgSendParams,
+  MsgUndelegateParams,
+} from './messages'
 
 /**
  * SingleMsgTx is a function that broadcasts a single messages transaction.
@@ -210,21 +219,21 @@ export type TxSender = {
 
   bank: {
     /** MsgMultiSend represents an arbitrary multi-in, multi-out send messages. */
-    // multiSend: SingleMsgTx<MsgMultiSendParams>
+    multiSend: SingleMsgTx<MsgMultiSendParams>
     /** MsgSend represents a messages to send coins from one account to another. */
-    // send: SingleMsgTx<MsgSendParams>
+    send: SingleMsgTx<MsgSendParams>
   }
   staking: {
     /** MsgBeginRedelegate defines an SDK messages for performing a redelegation of coins from a delegator and source validator to a destination validator. */
-    // beginRedelegate: SingleMsgTx<MsgBeginRedelegateParams>
+    beginRedelegate: SingleMsgTx<MsgBeginRedelegateParams>
     /** MsgCreateValidator defines an SDK messages for creating a new validator. */
-    // createValidator: SingleMsgTx<MsgCreateValidatorParams>
+    createValidator: SingleMsgTx<MsgCreateValidatorParams>
     /** MsgDelegate defines an SDK messages for performing a delegation of coins from a delegator to a validator. */
-    // delegate: SingleMsgTx<MsgDelegateParams>
+    delegate: SingleMsgTx<MsgDelegateParams>
     /** MsgEditValidator defines an SDK messages for editing an existing validator. */
-    // editValidator: SingleMsgTx<MsgEditValidatorParams>
+    editValidator: SingleMsgTx<MsgEditValidatorParams>
     /** MsgUndelegate defines an SDK messages for performing an undelegation from a delegate and a validator */
-    // undelegate: SingleMsgTx<MsgUndelegateParams>
+    undelegate: SingleMsgTx<MsgUndelegateParams>
   }
 }
 

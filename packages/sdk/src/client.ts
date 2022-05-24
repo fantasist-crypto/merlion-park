@@ -1,26 +1,83 @@
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
-import { fromHex } from '@cosmjs/encoding'
+import { AccountData, StdFee, StdSignDoc } from '@cosmjs/amino'
+import { fromBase64, fromHex } from '@cosmjs/encoding'
 
 import type { IServiceClient } from '@merlion/proto/cosmos/tx/v1beta1/service.client'
 import { ServiceClient } from '@merlion/proto/cosmos/tx/v1beta1/service.client'
-import { GetTxsEventRequest } from '@merlion/proto/cosmos/tx/v1beta1/service'
+import {
+  BroadcastMode as BroadcastModePB,
+  GetTxsEventRequest,
+  SimulateResponse,
+} from '@merlion/proto/cosmos/tx/v1beta1/service'
 import { TxMsgData } from '@merlion/proto/cosmos/base/abci/v1beta1/abci'
-import { Tx as CosmosTx } from '@merlion/proto/cosmos/tx/v1beta1/tx'
-import { getMsgDecoderRegistry, MsgDecoderRegistry } from './messages'
-import { ArrayLog, JsonLog, Tx } from './tx'
+import {
+  AuthInfo,
+  SignDoc,
+  SignerInfo,
+  Tx as CosmosTx,
+  TxBody,
+  TxRaw,
+} from '@merlion/proto/cosmos/tx/v1beta1/tx'
+import { EthAccount } from '@merlion/proto/ethermint/types/v1/account'
+import { SignMode } from '@merlion/proto/cosmos/tx/signing/v1beta1/signing'
+import { Any } from '@merlion/proto/google/protobuf/any'
+
+import {
+  AminoMsg,
+  Coin,
+  getMsgDecoderRegistry,
+  Msg,
+  MsgBeginRedelegate,
+  MsgCreateValidator,
+  MsgDecoderRegistry,
+  MsgDelegate,
+  MsgEditValidator,
+  MsgMultiSend,
+  MsgParams,
+  MsgSend,
+  MsgUndelegate,
+  ProtoMsg,
+} from './messages'
+import {
+  ArrayLog,
+  BroadcastMode,
+  JsonLog,
+  SignerData,
+  SingleMsgTx,
+  Tx,
+  TxOptions,
+  TxSender,
+} from './tx'
 import { getQuerier, Querier } from './query'
+import { isOfflineDirectSigner, OfflineSigner } from './signer'
+import { accountFromAny, encodeEthSecp256k1PubKey, encodePubKey } from './utils'
+import { BaseAccount } from '@merlion/proto/cosmos/auth/v1beta1/auth'
 
 export interface Options {
   /** A gRPC-web url, by default on port 9091 */
   grpcWebUrl: string
+
+  /** A signer for signing transaction & permits. */
+  signer: OfflineSigner
+
+  /** The chain id is used in encryption code & when signing txs. */
+  chainId: string
+
+  /** Address is the specific account address in the wallet that is permitted to sign transactions & permits. */
+  address: string
 }
 
 export class MerlionClient {
+  public readonly tx: TxSender
   public readonly query: Querier
   protected readonly txService: IServiceClient
   protected readonly msgDecoderRegistry: MsgDecoderRegistry
 
-  constructor({ grpcWebUrl: baseUrl }: Options) {
+  private readonly signer: OfflineSigner
+  private readonly chainId: string
+  private readonly address: string
+
+  constructor({ grpcWebUrl: baseUrl, signer, chainId, address }: Options) {
     const transport = new GrpcWebFetchTransport({ baseUrl })
 
     this.query = getQuerier(transport)
@@ -28,6 +85,351 @@ export class MerlionClient {
     this.txService = new ServiceClient(transport)
 
     this.msgDecoderRegistry = getMsgDecoderRegistry()
+
+    this.signer = signer
+    this.chainId = chainId
+    this.address = address
+
+    const doMsg = (msgClass: any): SingleMsgTx<any> => {
+      const func = (params: MsgParams, options?: TxOptions) => {
+        return this.tx.broadcast([new msgClass(params)], options)
+      }
+      func.simulate = (params: MsgParams, options?: TxOptions) => {
+        return this.tx.simulate([new msgClass(params)], options)
+      }
+
+      return func
+    }
+
+    this.tx = {
+      simulate: this.simulate.bind(this),
+      broadcast: this.signAndBroadcast.bind(this),
+      bank: {
+        multiSend: doMsg(MsgMultiSend),
+        send: doMsg(MsgSend),
+      },
+      staking: {
+        createValidator: doMsg(MsgCreateValidator),
+        editValidator: doMsg(MsgEditValidator),
+        delegate: doMsg(MsgDelegate),
+        beginRedelegate: doMsg(MsgBeginRedelegate),
+        undelegate: doMsg(MsgUndelegate),
+      },
+    }
+  }
+
+  private async simulate(
+    messages: Msg[],
+    txOptions?: TxOptions,
+  ): Promise<SimulateResponse> {
+    const txBytes = await this.prepareAndSign(messages, txOptions)
+    const { response } = await this.txService.simulate({ txBytes })
+    return response
+  }
+
+  private async signAndBroadcast(
+    messages: Msg[],
+    txOptions?: TxOptions,
+  ): Promise<Tx> {
+    const waitForCommit = txOptions?.waitForCommit ?? true
+    const broadcastTimeoutMs = txOptions?.broadcastTimeoutMs ?? 60_000
+    const broadcastCheckIntervalMs =
+      txOptions?.broadcastCheckIntervalMs ?? 6_000
+    const broadcastMode = txOptions?.broadcastMode ?? BroadcastMode.Sync
+
+    const txBytes = await this.prepareAndSign(messages, txOptions)
+
+    return this.broadcastTx(
+      txBytes,
+      broadcastTimeoutMs,
+      broadcastCheckIntervalMs,
+      broadcastMode,
+      waitForCommit,
+    )
+  }
+
+  private async prepareAndSign(
+    messages: Msg[],
+    {
+      gasLimit,
+      gasPriceInFeeDenom,
+      feeDenom,
+      memo,
+      explicitSignerData,
+    }: TxOptions = {
+      gasLimit: 250_000, // TODO
+      gasPriceInFeeDenom: 0.25, // TODO
+      feeDenom: 'fur',
+      memo: '',
+    },
+  ): Promise<Uint8Array> {
+    const txRaw = await this.sign(
+      messages,
+      {
+        gas: String(gasLimit!),
+        amount: [
+          {
+            amount: String(gasToFee(gasLimit!, gasPriceInFeeDenom!)),
+            denom: feeDenom!,
+          },
+        ],
+      },
+      memo!,
+      explicitSignerData,
+    )
+
+    return TxRaw.toBinary(txRaw)
+  }
+
+  /**
+   * Gets account number and sequence from the API, creates a sign doc,
+   * creates a single signature and assembles the signed transaction.
+   *
+   * The sign mode (SIGN_MODE_DIRECT or SIGN_MODE_LEGACY_AMINO_JSON) is determined by this client's signer.
+   *
+   * You can pass signer data (account number, sequence and chain ID) explicitly instead of querying them
+   * from the chain. This is needed when signing for a multisig account, but it also allows for offline signing
+   * (See the SigningStargateClient.offline constructor).
+   */
+  private async sign(
+    messages: Msg[],
+    fee: StdFee,
+    memo: string,
+    explicitSignerData?: SignerData,
+  ): Promise<TxRaw> {
+    const accountFromSigner = (await this.signer.getAccounts()).find(
+      (account) => account.address === this.address,
+    )
+    if (!accountFromSigner) {
+      throw new Error('Failed to retrieve account from signer')
+    }
+
+    let signerData: SignerData
+    if (explicitSignerData) {
+      signerData = explicitSignerData
+    } else {
+      const { response } = await this.query.auth.account({
+        address: this.address,
+      })
+
+      if (!response.account) {
+        throw new Error(
+          `Cannot find account "${this.address}", make sure it has a balance.`,
+        )
+      }
+
+      const account = accountFromAny(response.account)
+
+      if (account.type !== 'EthAccount' && account.type !== 'BaseAccount') {
+        throw new Error(
+          `Cannot sign with account of type "${account.type}", can only sign with "EthAccount" and "BaseAccount".`,
+        )
+      }
+
+      if (account.type === 'EthAccount') {
+        const ethAccount = account.account as EthAccount
+        signerData = {
+          accountNumber: Number(ethAccount.baseAccount?.accountNumber),
+          sequence: Number(ethAccount.baseAccount?.sequence),
+          chainId: this.chainId,
+        }
+      }
+
+      signerData = {
+        accountNumber: Number((account.account as BaseAccount).accountNumber),
+        sequence: Number((account.account as BaseAccount).sequence),
+        chainId: this.chainId,
+      }
+    }
+
+    return isOfflineDirectSigner(this.signer)
+      ? this.signDirect(accountFromSigner, messages, fee, memo, signerData)
+      : this.signAmino(accountFromSigner, messages, fee, memo, signerData)
+  }
+
+  private async signAmino(
+    account: AccountData,
+    messages: Msg[],
+    fee: StdFee,
+    memo: string,
+    { accountNumber, sequence, chainId }: SignerData,
+  ): Promise<TxRaw> {
+    if (isOfflineDirectSigner(this.signer)) {
+      throw new Error('Wrong signer type! Expected AminoSigner.')
+    }
+
+    const signMode = SignMode.LEGACY_AMINO_JSON
+    const msgs = await Promise.all(messages.map((msg) => msg.toAmino()))
+    const signDoc = makeSignDocAmino(
+      msgs,
+      fee,
+      chainId,
+      memo,
+      accountNumber,
+      sequence,
+    )
+    const { signature, signed } = await this.signer.signAmino(
+      account.address,
+      signDoc,
+    )
+    const txBody = {
+      typeUrl: '/cosmos.message.v1beta1.TxBody',
+      value: {
+        messages: await Promise.all(messages.map((msg) => msg.toProto())),
+        memo: memo,
+      },
+    }
+    const txBodyBytes = await this.encodeTx(txBody)
+    const signedGasLimit = Number(signed.fee.gas)
+    const signedSequence = Number(signed.sequence)
+    const pubKey = await encodePubKey(encodeEthSecp256k1PubKey(account.pubkey))
+    const signedAuthInfoBytes = await makeAuthInfoBytes(
+      [{ pubKey, sequence: signedSequence }],
+      signed.fee.amount,
+      signedGasLimit,
+      signMode,
+    )
+    return {
+      bodyBytes: txBodyBytes,
+      authInfoBytes: signedAuthInfoBytes,
+      signatures: [fromBase64(signature.signature)],
+    }
+  }
+
+  private async encodeTx(txBody: {
+    typeUrl: string
+    value: {
+      messages: ProtoMsg[]
+      memo: string
+    }
+  }): Promise<Uint8Array> {
+    const memo = txBody.value.memo
+    const messages = await Promise.all(
+      txBody.value.messages.map(async (message) =>
+        Any.create({
+          typeUrl: message.typeUrl,
+          value: message.encode(),
+        }),
+      ),
+    )
+    return TxBody.toBinary(TxBody.create({ memo, messages }))
+  }
+
+  private async signDirect(
+    account: AccountData,
+    messages: Msg[],
+    fee: StdFee,
+    memo: string,
+    { accountNumber, sequence, chainId }: SignerData,
+  ): Promise<TxRaw> {
+    if (!isOfflineDirectSigner(this.signer)) {
+      throw new Error('Wrong signer type! Expected DirectSigner.')
+    }
+
+    const txBody = {
+      typeUrl: '/cosmos.message.v1beta1.TxBody',
+      value: {
+        messages: await Promise.all(messages.map((msg) => msg.toProto())),
+        memo: memo,
+      },
+    }
+    const txBodyBytes = await this.encodeTx(txBody)
+    const pubKey = await encodePubKey(encodeEthSecp256k1PubKey(account.pubkey))
+    const gasLimit = Number(fee.gas)
+    const authInfoBytes = await makeAuthInfoBytes(
+      [{ pubKey, sequence }],
+      fee.amount,
+      gasLimit,
+    )
+    const signDoc = makeSignDocProto(
+      txBodyBytes,
+      authInfoBytes,
+      chainId,
+      accountNumber,
+    )
+    const { signature, signed } = await this.signer.signDirect(
+      account.address,
+      signDoc,
+    )
+    return {
+      bodyBytes: signed.bodyBytes,
+      authInfoBytes: signed.authInfoBytes,
+      signatures: [fromBase64(signature.signature)],
+    }
+  }
+
+  /**
+   * Broadcasts a signed transaction to the network and monitors its inclusion in a block.
+   *
+   * If broadcasting is rejected by the node for some reason (e.g. because of a CheckTx failure),
+   * an error is thrown.
+   *
+   * If the transaction is not included in a block before the provided timeout, these errors with a `TimeoutError`.
+   *
+   * If the transaction is included in a block, a {@link Tx} is returned. The caller then
+   * usually needs to check for execution success or failure.
+   */
+  private async broadcastTx(
+    tx: Uint8Array,
+    timeoutMs: number,
+    checkIntervalMs: number,
+    mode: BroadcastMode,
+    waitForCommit: boolean,
+  ): Promise<Tx> {
+    const start = Date.now()
+
+    let txHash: string
+
+    if (mode === BroadcastMode.Sync) {
+      const {
+        response: { txResponse },
+      } = await this.txService.broadcastTx({
+        txBytes: tx,
+        mode: BroadcastModePB.SYNC,
+      })
+      if (txResponse?.code) {
+        throw new Error(
+          `Broadcasting transaction failed with code ${txResponse?.code} (codespace: ${txResponse?.codespace}). Log: ${txResponse?.rawLog}`,
+        )
+      }
+      txHash = txResponse!.txhash
+    } else if (mode === BroadcastMode.Async) {
+      const {
+        response: { txResponse },
+      } = await this.txService.broadcastTx({
+        txBytes: tx,
+        mode: BroadcastModePB.ASYNC,
+      })
+      txHash = txResponse!.txhash
+    } else {
+      throw new Error(
+        `Unknown broadcast mode "${String(mode)}", must be either "${String(
+          BroadcastMode.Sync,
+        )}" or "${String(BroadcastMode.Async)}".`,
+      )
+    }
+
+    if (!waitForCommit) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return { transactionHash: txHash }
+    }
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      // sleep first because there's no point in checking right after broadcasting
+      await new Promise((r) => setTimeout(r, checkIntervalMs))
+
+      const result = await this.getTx(txHash)
+
+      if (result) return result
+
+      if (start + timeoutMs < Date.now()) {
+        throw new Error(
+          `Transaction ID ${txHash} was submitted but was not yet found on the chain. You might want to check later.`,
+        )
+      }
+    }
   }
 
   public async getTx(hash: string): Promise<Tx | null> {
@@ -43,7 +445,7 @@ export class MerlionClient {
 
     return await Promise.all(
       response.txResponses.map(async (tx) => {
-        let rawLog: string = tx.rawLog
+        const rawLog: string = tx.rawLog
         let jsonLog: JsonLog | undefined
         let arrayLog: ArrayLog | undefined
         if (tx.code === 0 && rawLog !== '') {
@@ -80,6 +482,7 @@ export class MerlionClient {
             const rgxMatches = errorMessageRgx.exec(rawLog)
             if (rgxMatches?.length === 3) {
               try {
+                // eslint-disable-next-line no-empty
               } catch (e) {}
             }
           } catch (decryptionError) {
@@ -119,4 +522,91 @@ export class MerlionClient {
       }),
     )
   }
+}
+
+function makeSignDocProto(
+  bodyBytes: Uint8Array,
+  authInfoBytes: Uint8Array,
+  chainId: string,
+  accountNumber: number,
+): SignDoc {
+  return {
+    bodyBytes: bodyBytes,
+    authInfoBytes: authInfoBytes,
+    chainId: chainId,
+    accountNumber: String(accountNumber),
+  }
+}
+
+/**
+ * Creates and serializes an AuthInfo document.
+ *
+ * This implementation does not support different signing modes for the different signers.
+ */
+async function makeAuthInfoBytes(
+  signers: ReadonlyArray<{
+    readonly pubKey: Any
+    readonly sequence: number
+  }>,
+  feeAmount: readonly Coin[],
+  gasLimit: number,
+  signMode = SignMode.DIRECT,
+): Promise<Uint8Array> {
+  return AuthInfo.toBinary(
+    AuthInfo.create({
+      signerInfos: makeSignerInfos(signers, signMode),
+      fee: {
+        amount: [...feeAmount],
+        gasLimit: String(gasLimit),
+      },
+    }),
+  )
+}
+
+/**
+ * Create signer infos from the provided signers.
+ *
+ * This implementation does not support different signing modes for the different signers.
+ */
+function makeSignerInfos(
+  signers: ReadonlyArray<{
+    readonly pubKey: Any
+    readonly sequence: number
+  }>,
+  signMode: SignMode,
+): SignerInfo[] {
+  return signers.map(({ pubKey, sequence }) =>
+    SignerInfo.create({
+      publicKey: pubKey,
+      modeInfo: {
+        sum: {
+          oneofKind: 'single',
+          single: { mode: signMode },
+        },
+      },
+      sequence: String(sequence),
+    }),
+  )
+}
+
+function makeSignDocAmino(
+  msgs: readonly AminoMsg[],
+  fee: StdFee,
+  chainId: string,
+  memo: string | undefined,
+  accountNumber: number | string,
+  sequence: number | string,
+): StdSignDoc {
+  return {
+    chain_id: chainId,
+    account_number: String(accountNumber),
+    sequence: String(sequence),
+    fee: fee,
+    msgs: msgs,
+    memo: memo || '',
+  }
+}
+
+function gasToFee(gasLimit: number, gasPrice: number): number {
+  return Math.ceil(gasLimit * gasPrice)
 }
