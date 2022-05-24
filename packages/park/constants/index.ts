@@ -1,6 +1,7 @@
 export * from './merlion-client'
 export * from './query-client'
 
+export * from './chain'
 export * from './coins'
 export * from './currency'
 

@@ -6,7 +6,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard'
 import { Layout } from '@/components'
 import { useValidator } from '@/hooks'
 import { classNames } from '@/utils'
-import { CommissionCard, Delegators, Address } from './components'
+import { CommissionCard, Delegators, Address, Delegation } from './components'
 
 export const Validator: FC = () => {
   const { query } = useRouter()
@@ -77,28 +77,8 @@ export const Validator: FC = () => {
             validatorPubKey={data?.consensusPubkey}
           />
         </div>
-        <div className="flex-[2] space-y-6 rounded-md bg-white p-6 dark:bg-slate-700">
-          <h3 className="font-medium">My delegations</h3>
-          <div>
-            <div>
-              <span className="text-3xl font-medium">0</span>
-              &nbsp;
-              <span className="text-sm font-semibold">Lion</span>
-            </div>
-            <div className="text-xs">≈ 0USM</div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <button className="h-10 rounded-full bg-cyan-600 text-slate-50">
-              Delegate
-            </button>
-            <button className="h-10 rounded-full bg-cyan-600 text-slate-50">
-              Redelegate
-            </button>
-            <button className="col-span-2 h-10 w-full rounded-full bg-cyan-600 text-slate-50">
-              Undelegate
-            </button>
-          </div>
-        </div>
+
+        <Delegation validatorAddr={query.addr as string} />
       </div>
     </Layout>
   )

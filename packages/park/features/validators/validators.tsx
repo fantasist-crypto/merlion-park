@@ -102,7 +102,7 @@ export const Validators: FC = () => {
               />
             </svg>
             <input
-              className="ml-2 h-10 w-full bg-transparent outline-none"
+              className="ml-2 h-10 w-full border-none bg-transparent outline-none focus:ring-0"
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}

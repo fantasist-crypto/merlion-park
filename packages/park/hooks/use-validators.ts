@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query'
-import type { QueryValidatorsRequest } from '@merlion/sdk'
+import type { QueryValidatorsRequest } from '@merlion/proto/cosmos/staking/v1beta1/query'
 
 import { merlionClient } from '@/constants'
 
