@@ -3,24 +3,16 @@ import { AccountData, StdFee, StdSignDoc } from '@cosmjs/amino'
 import { fromBase64, fromHex } from '@cosmjs/encoding'
 
 import type { IServiceClient } from '@merlion/proto/cosmos/tx/v1beta1/service.client'
-import { ServiceClient } from '@merlion/proto/cosmos/tx/v1beta1/service.client'
-import {
-  BroadcastMode as BroadcastModePB,
-  GetTxsEventRequest,
-  SimulateResponse,
-} from '@merlion/proto/cosmos/tx/v1beta1/service'
-import { TxMsgData } from '@merlion/proto/cosmos/base/abci/v1beta1/abci'
-import {
-  AuthInfo,
+import type { SimulateResponse } from '@merlion/proto/cosmos/tx/v1beta1/service'
+import type {
   SignDoc,
   SignerInfo,
-  Tx as CosmosTx,
-  TxBody,
   TxRaw,
 } from '@merlion/proto/cosmos/tx/v1beta1/tx'
-import { EthAccount } from '@merlion/proto/ethermint/types/v1/account'
-import { SignMode } from '@merlion/proto/cosmos/tx/signing/v1beta1/signing'
-import { Any } from '@merlion/proto/google/protobuf/any'
+import type { EthAccount } from '@merlion/proto/ethermint/types/v1/account'
+import type { SignMode } from '@merlion/proto/cosmos/tx/signing/v1beta1/signing'
+import type { BaseAccount } from '@merlion/proto/cosmos/auth/v1beta1/auth'
+import type { Any } from '@merlion/proto/google/protobuf/any'
 
 import {
   AminoMsg,
@@ -49,46 +41,55 @@ import {
   TxSender,
 } from './tx'
 import { getQuerier, Querier } from './query'
-import { isOfflineDirectSigner, OfflineSigner } from './signer'
+import { isOfflineDirectSigner, OfflineSigner, ReadonlySigner } from './signer'
 import { accountFromAny, encodeEthSecp256k1PubKey, encodePubKey } from './utils'
-import { BaseAccount } from '@merlion/proto/cosmos/auth/v1beta1/auth'
 
-export interface Options {
+export interface CreateOptions {
   /** A gRPC-web url, by default on port 9091 */
   grpcWebUrl: string
 
   /** A signer for signing transaction & permits. */
-  signer: OfflineSigner
+  signer?: OfflineSigner
 
   /** The chain id is used in encryption code & when signing txs. */
   chainId: string
 
   /** Address is the specific account address in the wallet that is permitted to sign transactions & permits. */
-  address: string
+  address?: string
 }
 
 export class MerlionClient {
   public readonly tx: TxSender
-  public readonly query: Querier
-  protected readonly txService: IServiceClient
-  protected readonly msgDecoderRegistry: MsgDecoderRegistry
 
   private readonly signer: OfflineSigner
   private readonly chainId: string
   private readonly address: string
 
-  constructor({ grpcWebUrl: baseUrl, signer, chainId, address }: Options) {
-    const transport = new GrpcWebFetchTransport({ baseUrl })
+  static async create(options: CreateOptions) {
+    const transport = new GrpcWebFetchTransport({
+      baseUrl: options.grpcWebUrl,
+    })
 
-    this.query = getQuerier(transport)
+    const query = await getQuerier(transport)
 
-    this.txService = new ServiceClient(transport)
+    const txService = new (
+      await import('@merlion/proto/cosmos/tx/v1beta1/service.client')
+    ).ServiceClient(transport)
 
-    this.msgDecoderRegistry = getMsgDecoderRegistry()
+    const msgDecoderRegistry = await getMsgDecoderRegistry()
 
-    this.signer = signer
-    this.chainId = chainId
-    this.address = address
+    return new MerlionClient(query, txService, msgDecoderRegistry, options)
+  }
+
+  private constructor(
+    public readonly query: Querier,
+    private readonly txService: IServiceClient,
+    private msgDecoderRegistry: MsgDecoderRegistry,
+    options: CreateOptions,
+  ) {
+    this.signer = options.signer ?? new ReadonlySigner()
+    this.chainId = options.chainId
+    this.address = options.address ?? ''
 
     const doMsg = (msgClass: any): SingleMsgTx<any> => {
       const func = (params: MsgParams, options?: TxOptions) => {
@@ -178,6 +179,8 @@ export class MerlionClient {
       explicitSignerData,
     )
 
+    const { TxRaw } = await import('@merlion/proto/cosmos/tx/v1beta1/tx')
+
     return TxRaw.toBinary(txRaw)
   }
 
@@ -218,7 +221,7 @@ export class MerlionClient {
         )
       }
 
-      const account = accountFromAny(response.account)
+      const account = await accountFromAny(response.account)
 
       if (account.type !== 'EthAccount' && account.type !== 'BaseAccount') {
         throw new Error(
@@ -258,7 +261,7 @@ export class MerlionClient {
       throw new Error('Wrong signer type! Expected AminoSigner.')
     }
 
-    const signMode = SignMode.LEGACY_AMINO_JSON
+    const signMode = 127 // SignMode.LEGACY_AMINO_JSON
     const msgs = await Promise.all(messages.map((msg) => msg.toAmino()))
     const signDoc = makeSignDocAmino(
       msgs,
@@ -304,14 +307,19 @@ export class MerlionClient {
     }
   }): Promise<Uint8Array> {
     const memo = txBody.value.memo
+
+    const { Any } = await import('@merlion/proto/google/protobuf/any')
     const messages = await Promise.all(
       txBody.value.messages.map(async (message) =>
         Any.create({
           typeUrl: message.typeUrl,
-          value: message.encode(),
+          value: await message.encode(),
         }),
       ),
     )
+
+    const { TxBody } = await import('@merlion/proto/cosmos/tx/v1beta1/tx')
+
     return TxBody.toBinary(TxBody.create({ memo, messages }))
   }
 
@@ -385,7 +393,7 @@ export class MerlionClient {
         response: { txResponse },
       } = await this.txService.broadcastTx({
         txBytes: tx,
-        mode: BroadcastModePB.SYNC,
+        mode: 2, // BroadcastModePB.SYNC
       })
       if (txResponse?.code) {
         throw new Error(
@@ -398,7 +406,7 @@ export class MerlionClient {
         response: { txResponse },
       } = await this.txService.broadcastTx({
         txBytes: tx,
-        mode: BroadcastModePB.ASYNC,
+        mode: 3, // BroadcastModePB.ASYNC,
       })
       txHash = txResponse!.txhash
     } else {
@@ -438,6 +446,10 @@ export class MerlionClient {
   }
 
   private async txsQuery(query: string): Promise<Tx[]> {
+    const { GetTxsEventRequest } = await import(
+      '@merlion/proto/cosmos/tx/v1beta1/service'
+    )
+
     const request = GetTxsEventRequest.create({
       events: query.split(' AND ').map((q) => q.trim()),
     })
@@ -490,11 +502,17 @@ export class MerlionClient {
           }
         }
 
+        const { TxMsgData } = await import(
+          '@merlion/proto/cosmos/base/abci/v1beta1/abci'
+        )
+
         const txMsgData = TxMsgData.fromBinary(fromHex(tx.data))
         const data = new Array<Uint8Array>(txMsgData.data.length)
 
         // Decode input messages
-        const decodedTx = CosmosTx.fromBinary(tx.tx!.value)
+        const decodedTx = (
+          await import('@merlion/proto/cosmos/tx/v1beta1/tx')
+        ).Tx.fromBinary(tx.tx!.value)
         for (let i = 0; i < decodedTx.body!.messages.length; i++) {
           const { typeUrl, value: msgBytes } = decodedTx.body!.messages[i]
           const msgDecoder = this.msgDecoderRegistry.get(typeUrl.slice(1))
@@ -550,11 +568,13 @@ async function makeAuthInfoBytes(
   }>,
   feeAmount: readonly Coin[],
   gasLimit: number,
-  signMode = SignMode.DIRECT,
+  signMode = 1, // SignMode.DIRECT
 ): Promise<Uint8Array> {
+  const { AuthInfo } = await import('@merlion/proto/cosmos/tx/v1beta1/tx')
+
   return AuthInfo.toBinary(
     AuthInfo.create({
-      signerInfos: makeSignerInfos(signers, signMode),
+      signerInfos: await makeSignerInfos(signers, signMode),
       fee: {
         amount: [...feeAmount],
         gasLimit: String(gasLimit),
@@ -568,13 +588,15 @@ async function makeAuthInfoBytes(
  *
  * This implementation does not support different signing modes for the different signers.
  */
-function makeSignerInfos(
+async function makeSignerInfos(
   signers: ReadonlyArray<{
     readonly pubKey: Any
     readonly sequence: number
   }>,
   signMode: SignMode,
-): SignerInfo[] {
+): Promise<SignerInfo[]> {
+  const { SignerInfo } = await import('@merlion/proto/cosmos/tx/v1beta1/tx')
+
   return signers.map(({ pubKey, sequence }) =>
     SignerInfo.create({
       publicKey: pubKey,

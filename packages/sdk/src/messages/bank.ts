@@ -1,9 +1,4 @@
 import {
-  MsgSend as MsgSendPB,
-  MsgMultiSend as MsgMultiSendPB,
-} from '@merlion/proto/cosmos/bank/v1beta1/tx'
-
-import {
   AminoMsg,
   Coin,
   Input,
@@ -40,7 +35,10 @@ export class MsgSend implements Msg {
     return {
       typeUrl: '/cosmos.bank.v1beta1.MsgSend',
       value: msgContent,
-      encode: () => MsgSendPB.toBinary(msgContent),
+      encode: async () =>
+        (
+          await import('@merlion/proto/cosmos/bank/v1beta1/tx')
+        ).MsgSend.toBinary(msgContent),
     }
   }
 
@@ -80,7 +78,10 @@ export class MsgMultiSend implements Msg {
     return {
       typeUrl: '/cosmos.bank.v1beta1.MsgMultiSend',
       value: msgContent,
-      encode: () => MsgMultiSendPB.toBinary(msgContent),
+      encode: async () =>
+        (
+          await import('@merlion/proto/cosmos/bank/v1beta1/tx')
+        ).MsgMultiSend.toBinary(msgContent),
     }
   }
 

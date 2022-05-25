@@ -2,16 +2,6 @@ import { fromBase64 } from '@cosmjs/encoding'
 import { bech32 } from 'bech32'
 import BigNumber from 'bignumber.js'
 
-import { Any } from '@merlion/proto/google/protobuf/any'
-import { PubKey } from '@merlion/proto/cosmos/crypto/ed25519/keys'
-import { Description } from '@merlion/proto/cosmos/staking/v1beta1/staking'
-import {
-  MsgUndelegate as MsgUndelegatePB,
-  MsgBeginRedelegate as MsgBeginRedelegatePB,
-  MsgDelegate as MsgDelegatePB,
-  MsgEditValidator as MsgEditValidatorPB,
-  MsgCreateValidator as MsgCreateValidatorPB,
-} from '@merlion/proto/cosmos/staking/v1beta1/tx'
 import { AminoMsg, Coin, Msg, MsgParams, ProtoMsg } from './types'
 
 /**
@@ -88,6 +78,12 @@ export class MsgCreateValidator implements Msg {
   }
 
   async toProto(): Promise<ProtoMsg> {
+    const { Any } = await import('@merlion/proto/google/protobuf/any')
+    const { PubKey } = await import('@merlion/proto/cosmos/crypto/ed25519/keys')
+    const { MsgCreateValidator } = await import(
+      '@merlion/proto/cosmos/staking/v1beta1/tx'
+    )
+
     const msgContent = {
       description: this.description,
       commission: {
@@ -118,7 +114,10 @@ export class MsgCreateValidator implements Msg {
     return {
       typeUrl: `/cosmos.staking.v1beta1.MsgCreateValidator`,
       value: msgContent,
-      encode: () => MsgCreateValidatorPB.toBinary(msgContent),
+      encode: async () =>
+        (
+          await import('@merlion/proto/cosmos/staking/v1beta1/tx')
+        ).MsgCreateValidator.toBinary(msgContent),
     }
   }
 
@@ -181,6 +180,9 @@ export class MsgEditValidator implements Msg {
   }
 
   async toProto(): Promise<ProtoMsg> {
+    const { Description } = await import(
+      '@merlion/proto/cosmos/staking/v1beta1/staking'
+    )
     const msgContent = {
       validatorAddress: this.validatorAddress,
       description: Description.create(this.description || {}),
@@ -193,7 +195,10 @@ export class MsgEditValidator implements Msg {
     return {
       typeUrl: `/cosmos.staking.v1beta1.MsgEditValidator`,
       value: msgContent,
-      encode: () => MsgEditValidatorPB.toBinary(msgContent),
+      encode: async () =>
+        (
+          await import('@merlion/proto/cosmos/staking/v1beta1/tx')
+        ).MsgEditValidator.toBinary(msgContent),
     }
   }
 
@@ -258,7 +263,10 @@ export class MsgDelegate implements Msg {
     return {
       typeUrl: `/cosmos.staking.v1beta1.MsgDelegate`,
       value: msgContent,
-      encode: () => MsgDelegatePB.toBinary(msgContent),
+      encode: async () =>
+        (
+          await import('@merlion/proto/cosmos/staking/v1beta1/tx')
+        ).MsgDelegate.toBinary(msgContent),
     }
   }
 
@@ -311,7 +319,10 @@ export class MsgBeginRedelegate implements Msg {
     return {
       typeUrl: `/cosmos.staking.v1beta1.MsgBeginRedelegate`,
       value: msgContent,
-      encode: () => MsgBeginRedelegatePB.toBinary(msgContent),
+      encode: async () =>
+        (
+          await import('@merlion/proto/cosmos/staking/v1beta1/tx')
+        ).MsgBeginRedelegate.toBinary(msgContent),
     }
   }
 
@@ -360,7 +371,10 @@ export class MsgUndelegate implements Msg {
     return {
       typeUrl: `/cosmos.staking.v1beta1.MsgUndelegate`,
       value: msgContent,
-      encode: () => MsgUndelegatePB.toBinary(msgContent),
+      encode: async () =>
+        (
+          await import('@merlion/proto/cosmos/staking/v1beta1/tx')
+        ).MsgUndelegate.toBinary(msgContent),
     }
   }
 

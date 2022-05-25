@@ -1,8 +1,8 @@
 import { fromBase64, toBase64 } from '@cosmjs/encoding'
 import type { Any } from '@merlion/proto/google/protobuf/any'
-import { LegacyAminoPubKey } from '@merlion/proto/cosmos/crypto/multisig/keys'
-import { PubKey as Secp256k1PubKeyPB } from '@merlion/proto/cosmos/crypto/secp256k1/keys'
-import { PubKey as EthSecp256k1PubKeyPB } from '@merlion/proto/ethermint/crypto/v1/ethsecp256k1/keys'
+import type { LegacyAminoPubKey } from '@merlion/proto/cosmos/crypto/multisig/keys'
+import type { PubKey as Secp256k1PubKeyPB } from '@merlion/proto/cosmos/crypto/secp256k1/keys'
+import type { PubKey as EthSecp256k1PubKeyPB } from '@merlion/proto/ethermint/crypto/v1/ethsecp256k1/keys'
 
 export interface PubKey {
   readonly type: typeof PubKeyType[keyof typeof PubKeyType]
@@ -89,14 +89,18 @@ export function encodeEd25519PubKey(pubKey: Uint8Array): Ed25519PubKey {
   }
 }
 
-export function encodePubKey(pubKey: PubKey): Any {
+export async function encodePubKey(pubKey: PubKey): Promise<Any> {
   if (isSecp256k1PubKey(pubKey)) {
     const pubKeyProto: Secp256k1PubKeyPB = {
       key: fromBase64(pubKey.value),
     }
     return {
       typeUrl: '/cosmos.crypto.secp256k1.PubKey',
-      value: Uint8Array.from(Secp256k1PubKeyPB.toBinary(pubKeyProto)),
+      value: Uint8Array.from(
+        (
+          await import('@merlion/proto/cosmos/crypto/secp256k1/keys')
+        ).PubKey.toBinary(pubKeyProto),
+      ),
     }
   } else if (isEthSecp256k1PubKey(pubKey)) {
     const pubKeyProto: EthSecp256k1PubKeyPB = {
@@ -104,12 +108,18 @@ export function encodePubKey(pubKey: PubKey): Any {
     }
     return {
       typeUrl: '/ethermint.crypto.v1.ethsecp256k1.PubKey',
-      value: EthSecp256k1PubKeyPB.toBinary(pubKeyProto),
+      value: (
+        await import('@merlion/proto/cosmos/crypto/secp256k1/keys')
+      ).PubKey.toBinary(pubKeyProto),
     }
   } else if (isMultisigThresholdPubKey(pubKey)) {
+    const { LegacyAminoPubKey } = await import(
+      '@merlion/proto/cosmos/crypto/multisig/keys'
+    )
+
     const pubKeyProto: LegacyAminoPubKey = {
       threshold: Number(pubKey.value.threshold),
-      publicKeys: pubKey.value.pubKeys.map(encodePubKey),
+      publicKeys: await Promise.all(pubKey.value.pubKeys.map(encodePubKey)),
     }
     return {
       typeUrl: '/cosmos.crypto.multisig.LegacyAminoPubKey',
@@ -120,14 +130,18 @@ export function encodePubKey(pubKey: PubKey): Any {
   }
 }
 
-function decodeSinglePubKey(pubKey: Any): SinglePubKey {
+async function decodeSinglePubKey(pubKey: Any): Promise<SinglePubKey> {
   switch (pubKey.typeUrl) {
     case '/cosmos.crypto.secp256k1.PubKey': {
-      const { key } = Secp256k1PubKeyPB.fromBinary(pubKey.value)
+      const { key } = (
+        await import('@merlion/proto/cosmos/crypto/secp256k1/keys')
+      ).PubKey.fromBinary(pubKey.value)
       return encodeSecp256k1PubKey(key)
     }
     case '/cosmos.crypto.ed25519.PubKey': {
-      const { key } = EthSecp256k1PubKeyPB.fromBinary(pubKey.value)
+      const { key } = (
+        await import('@merlion/proto/ethermint/crypto/v1/ethsecp256k1/keys')
+      ).PubKey.fromBinary(pubKey.value)
       return encodeEd25519PubKey(key)
     }
     default:
@@ -137,9 +151,9 @@ function decodeSinglePubKey(pubKey: Any): SinglePubKey {
   }
 }
 
-export function decodePubKey(
+export async function decodePubKey(
   pubKey?: Any | null,
-): SinglePubKey | MultisigThresholdPubKey | null {
+): Promise<SinglePubKey | MultisigThresholdPubKey | null> {
   if (!pubKey || !pubKey.value) {
     return null
   }
@@ -150,6 +164,10 @@ export function decodePubKey(
       return decodeSinglePubKey(pubKey)
     }
     case '/cosmos.crypto.multisig.LegacyAminoPubKey': {
+      const { LegacyAminoPubKey } = await import(
+        '@merlion/proto/cosmos/crypto/multisig/keys'
+      )
+
       const { threshold, publicKeys } = LegacyAminoPubKey.fromBinary(
         pubKey.value,
       )
@@ -157,7 +175,7 @@ export function decodePubKey(
         type: 'tendermint/PubKeyMultisigThreshold',
         value: {
           threshold: threshold.toString(),
-          pubKeys: publicKeys.map(decodeSinglePubKey),
+          pubKeys: await Promise.all(publicKeys.map(decodeSinglePubKey)),
         },
       }
     }

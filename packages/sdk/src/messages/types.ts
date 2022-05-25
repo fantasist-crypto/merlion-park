@@ -1,7 +1,7 @@
 export interface ProtoMsg {
   typeUrl: string
   value: unknown
-  encode(): Uint8Array
+  encode(): Promise<Uint8Array>
 }
 
 export type AminoMsg = {
