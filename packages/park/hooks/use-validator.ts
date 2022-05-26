@@ -1,11 +1,15 @@
 import { useQuery } from 'react-query'
 
-import { merlionClient } from '@/constants'
+import { useMerlionClient } from './use-merlion-client'
 
-export const useValidator = (validatorAddr: string) =>
-  useQuery(
+export const useValidator = (validatorAddr: string) => {
+  const merlionClient = useMerlionClient()
+
+  return useQuery(
     ['validators', validatorAddr],
     async () => {
+      if (!merlionClient) return null
+
       const { response, status } = await merlionClient.query.staking.validator({
         validatorAddr,
       })
@@ -14,5 +18,6 @@ export const useValidator = (validatorAddr: string) =>
 
       return response.validator
     },
-    { enabled: !!validatorAddr },
+    { enabled: !!(merlionClient && validatorAddr) },
   )
+}

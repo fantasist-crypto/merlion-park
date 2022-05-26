@@ -1,9 +1,11 @@
 import { useQuery } from 'react-query'
 
-import { merlionClient } from '@/constants'
+import { useMerlionClient } from './use-merlion-client'
 
-export const useBalance = (address: string, denom: string) =>
-  useQuery(
+export const useBalance = (address: string, denom: string) => {
+  const merlionClient = useMerlionClient()
+
+  return useQuery(
     [],
     async () => {
       const { response } = await merlionClient.query.bank.balance({
@@ -13,5 +15,6 @@ export const useBalance = (address: string, denom: string) =>
 
       return response.balance
     },
-    { enabled: !!address },
+    { enabled: !!(merlionClient && address && denom) },
   )
+}

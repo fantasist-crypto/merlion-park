@@ -1,66 +1,33 @@
-import { FC, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import BigNumber from 'bignumber.js'
+import { FaSortUp, FaSortDown } from 'react-icons/fa'
+import { BiUser } from 'react-icons/bi'
 import numeral from 'numeral'
 import Fuse from 'fuse.js'
 
 import { classNames } from '@/utils'
 import { Layout } from '@/components'
-import { LION_DECIMAL } from '@/constants'
-import { useValidators, usePool } from '@/hooks'
-import { MissCounter, Skeleton, ValidatorRewards } from './components'
+import { Skeleton } from './skeleton'
+import { useValidatorsData } from './hooks'
 
 // TODO
-numeral.nullFormat('N/A')
+numeral.nullFormat('')
+
+type SortBy = 'moniker' | 'votingPower' | 'commission' | 'uptime' | 'rewards'
 
 export const Validators: FC = () => {
+  const [keyword, setKeyword] = useState<string>('')
+  const sortByRef = useRef<SortBy>(null)
+  const [isDesc, setIsDesc] = useState<boolean>(null)
+
   const {
-    data: poolData,
-    isError: isPoolError,
-    isLoading: isPoolLoading,
-  } = usePool()
-  const {
-    data: validatorsData,
-    isError: isValidatorsError,
-    isLoading: isValidatorsLoading,
-  } = useValidators({
-    status: 'BOND_STATUS_BONDED',
-  })
-
-  const [keyword, setKeyword] = useState('')
-
-  const isError = useMemo(
-    () => isPoolError && isValidatorsError,
-    [isPoolError, isValidatorsError],
-  )
-  const isLoading = useMemo(
-    () => isPoolLoading && isValidatorsLoading,
-    [isPoolLoading, isValidatorsLoading],
-  )
-
-  const validators = useMemo(
-    () =>
-      validatorsData?.validators.map((v) => {
-        const bondedTokens = poolData?.pool?.bondedTokens
-        const votingPower = bondedTokens
-          ? new BigNumber(v.tokens).div(bondedTokens).toFixed(4)
-          : null
-        const commission = new BigNumber(
-          v.commission?.commissionRates?.rate ?? 0,
-        )
-          .div(LION_DECIMAL)
-          .toNumber()
-
-        return {
-          operatorAddress: v.operatorAddress,
-          description: v.description,
-          votingPower,
-          commission,
-          tokens: v.tokens,
-        }
-      }) ?? [],
-    [poolData, validatorsData],
-  )
+    data: validators,
+    missCounters,
+    validatorRewards,
+    isPoolLoading,
+    isOracleParamsLoading,
+    isValidatorsLoading: isLoading,
+  } = useValidatorsData()
 
   const validatorsFuse = useMemo(
     () =>
@@ -68,7 +35,8 @@ export const Validators: FC = () => {
         includeScore: false,
         keys: ['description.moniker'],
       }),
-    [validators],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(validators)],
   )
 
   const filterResult = useMemo(
@@ -76,8 +44,60 @@ export const Validators: FC = () => {
       keyword
         ? validatorsFuse.search(keyword).map(({ item }) => item)
         : validators,
-    [keyword, validators, validatorsFuse],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [keyword, JSON.stringify(validators), validatorsFuse],
   )
+
+  const sortResult = useMemo(
+    () =>
+      sortByRef.current
+        ? filterResult.sort((a, b) => {
+            let aValue: unknown
+            let bValue: unknown
+
+            if (sortByRef.current === 'moniker') {
+              aValue = a.description.moniker.toLowerCase()
+              bValue = b.description.moniker.toLowerCase()
+            } else if (sortByRef.current === 'rewards') {
+              aValue = Number(a.rewards.amount)
+              bValue = Number(b.rewards.amount)
+            } else {
+              aValue = Number(a[sortByRef.current])
+              bValue = Number(b[sortByRef.current])
+            }
+
+            if (aValue < bValue) return isDesc ? 1 : -1
+            if (aValue > bValue) return isDesc ? -1 : 1
+            return 0
+          })
+        : filterResult,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filterResult, isDesc, sortByRef.current],
+  )
+
+  const changeSortBy = (key: SortBy) => {
+    if (
+      isLoading ||
+      isPoolLoading ||
+      isOracleParamsLoading ||
+      !missCounters.every((v) => !v.isLoading) ||
+      !validatorRewards.every((v) => !v.isLoading)
+    )
+      return
+    if (key === sortByRef.current) {
+      setIsDesc(!isDesc)
+    } else {
+      setIsDesc(false)
+      sortByRef.current = key
+    }
+  }
+
+  useEffect(() => {
+    if (sortByRef.current) {
+      setIsDesc(null)
+      sortByRef.current = null
+    }
+  }, [keyword])
 
   return (
     <Layout>
@@ -85,8 +105,8 @@ export const Validators: FC = () => {
         <div className="flex items-center pt-8 pb-4">
           <h2 className="text-4xl font-semibold">Validators</h2>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-8 pb-4 dark:border-slate-600 dark:bg-slate-700">
-          <div className="mb-4 flex items-center rounded-lg border border-slate-200 px-2 dark:border-slate-600">
+        <div className="rounded-lg border border-gray-100 bg-white p-8 pb-4 dark:border-neutral-700 dark:bg-neutral-800">
+          <div className="mb-4 flex items-center rounded-lg border border-slate-200 px-2 dark:border-neutral-700">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -105,45 +125,165 @@ export const Validators: FC = () => {
               className="ml-2 h-10 w-full border-none bg-transparent outline-none focus:ring-0"
               type="text"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                setKeyword(e.target.value)
+              }}
             />
           </div>
           <table className="min-w-full table-auto border-collapse text-right">
             <thead>
-              <tr className="border-b border-b-slate-200 text-xs dark:border-b-slate-600">
-                <th className="py-3 text-left">Moniker</th>
-                <th className="">Voting power</th>
-                <th className="">Commission</th>
-                <th className="">Uptime</th>
-                <th className="">Rewards</th>
+              <tr className="border-b border-b-neutral-100 text-sm dark:border-b-neutral-700">
+                <th className="py-3 text-left">
+                  <button
+                    className="flex items-center font-semibold"
+                    onClick={() => changeSortBy('moniker')}
+                  >
+                    Moniker
+                    <span className="relative inline-block h-4 w-4">
+                      <FaSortUp
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'moniker' && !isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                      <FaSortDown
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'moniker' && isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th>
+                  <button
+                    className="inline-flex items-center font-semibold"
+                    onClick={() => changeSortBy('votingPower')}
+                  >
+                    Voting power
+                    <span className="relative inline-block h-4 w-4">
+                      <FaSortUp
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'votingPower' && !isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                      <FaSortDown
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'votingPower' && isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th>
+                  <button
+                    className="inline-flex items-center font-semibold"
+                    onClick={() => changeSortBy('commission')}
+                  >
+                    Commission
+                    <span className="relative inline-block h-4 w-4">
+                      <FaSortUp
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'commission' && !isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                      <FaSortDown
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'commission' && isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th>
+                  <button
+                    className="inline-flex items-center font-semibold"
+                    onClick={() => changeSortBy('uptime')}
+                  >
+                    Uptime
+                    <span className="relative inline-block h-4 w-4">
+                      <FaSortUp
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'uptime' && !isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                      <FaSortDown
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'uptime' && isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                    </span>
+                  </button>
+                </th>
+                <th>
+                  <button
+                    className="inline-flex items-center font-semibold"
+                    onClick={() => changeSortBy('rewards')}
+                  >
+                    Rewards
+                    <span className="relative inline-block h-4 w-4">
+                      <FaSortUp
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'rewards' && !isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                      <FaSortDown
+                        className={classNames(
+                          'absolute ml-0.5',
+                          sortByRef.current === 'rewards' && isDesc
+                            ? ''
+                            : 'text-gray-200',
+                        )}
+                      />
+                    </span>
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody
               className={classNames(
-                'divide-y divide-slate-200 dark:divide-slate-600',
+                'divide-y divide-neutral-100 dark:divide-neutral-700',
                 isLoading && 'animate-pulse',
               )}
             >
               {isLoading && <Skeleton />}
-              {isError && (
-                <tr>
-                  <td className="py-16 text-center" colSpan={5}>
-                    Error
-                  </td>
-                </tr>
-              )}
-              {!isLoading && !isError && !filterResult.length && (
+              {!isLoading && !sortResult.length && (
                 <tr>
                   <td className="py-16 text-center" colSpan={5}>
                     No Data
                   </td>
                 </tr>
               )}
-              {!isError &&
-                !isLoading &&
-                filterResult.map((v) => (
-                  <tr key={v.operatorAddress} className="">
+              {!isLoading &&
+                sortResult.map((v, i) => (
+                  <tr key={v.operatorAddress}>
                     <td className="flex items-center space-x-2 py-4 text-left text-base font-semibold">
+                      <BiUser className="h-10 w-10 rounded-full bg-gray-200 text-[1.5rem] text-neutral-800" />
                       <Link href={`/validators/${v.operatorAddress}`}>
                         <a>{v.description.moniker}</a>
                       </Link>
@@ -159,13 +299,51 @@ export const Validators: FC = () => {
                         </svg>
                       )}
                     </td>
-                    <td>{numeral(v.votingPower).format('0.00%')}</td>
+                    <td>
+                      <div className="flex h-6 justify-end">
+                        <div
+                          className={classNames(
+                            isPoolLoading &&
+                              'w-20 animate-pulse rounded bg-slate-100',
+                          )}
+                        >
+                          {numeral(v.votingPower).format('0.00%')}
+                        </div>
+                      </div>
+                    </td>
                     <td>{numeral(v.commission).format('0.00%')}</td>
                     <td>
-                      <MissCounter validatorAddr={v.operatorAddress} />
+                      <div className="flex h-6 justify-end">
+                        <div
+                          className={classNames(
+                            'uppercase',
+                            (missCounters[i].isLoading ||
+                              isOracleParamsLoading) &&
+                              'w-20 animate-pulse rounded bg-slate-100',
+                          )}
+                        >
+                          {numeral(v.uptime).format('0.00%')}
+                        </div>
+                      </div>
                     </td>
                     <td>
-                      <ValidatorRewards validator={v as any} />
+                      <div className={classNames('flex h-6 justify-end')}>
+                        <div
+                          className={classNames(
+                            'uppercase',
+                            validatorRewards[i].isLoading &&
+                              'w-32 animate-pulse rounded bg-slate-100',
+                          )}
+                        >
+                          {`${
+                            !validatorRewards[i].isLoading
+                              ? Number(v.rewards.amount) > 1000
+                                ? numeral(v.rewards.amount).format('0.00a')
+                                : numeral(v.rewards.amount).format('0.000000')
+                              : ''
+                          } ${v.rewards.denom}`}
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ))}

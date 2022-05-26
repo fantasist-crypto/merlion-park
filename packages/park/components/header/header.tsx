@@ -3,10 +3,14 @@ import Link from 'next/link'
 import { MdAccountBalanceWallet } from 'react-icons/md'
 
 import { useKeplr } from '@/hooks'
-import { classNames, shortenAddress } from '@/utils'
+import { shortenAddress } from '@/utils'
 import { ThemeSwitch } from './theme-switch'
 
-export const Header: FC = () => {
+export interface HeaderProps {
+  className?: string
+}
+
+export const Header: FC<HeaderProps> = ({ className }) => {
   const { address, isActive, connect } = useKeplr()
 
   useEffect(() => {
@@ -14,7 +18,7 @@ export const Header: FC = () => {
   }, [connect])
 
   return (
-    <header className={classNames('bg-white dark:bg-slate-700')}>
+    <header className={className}>
       <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between space-x-4 px-6">
         <Link href="/">
           <a className="text-2xl">Merlion</a>
@@ -22,13 +26,13 @@ export const Header: FC = () => {
         <div className="flex-1" />
         <ThemeSwitch />
         {isActive ? (
-          <div className="flex items-center justify-center rounded-full bg-cyan-600 px-6 py-1.5 text-slate-50">
+          <div className="flex items-center justify-center rounded-full px-6 py-1.5 text-cyan-600 ring-1 ring-cyan-600 dark:text-slate-50 dark:ring-neutral-50">
             <MdAccountBalanceWallet className="mr-1 text-xl" />
             {shortenAddress(address)}
           </div>
         ) : (
           <button
-            className="rounded-full bg-cyan-600 px-6 py-1.5 text-slate-50"
+            className="rounded-full px-6 py-1.5 text-neutral-50"
             onClick={connect}
           >
             Connect Wallet

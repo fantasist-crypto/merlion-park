@@ -1,8 +1,14 @@
 import { useQuery } from 'react-query'
-import { merlionClient } from '@/constants'
 
-export const useDelegation = (validatorAddr?: string, delegatorAddr?: string) =>
-  useQuery(
+import { useMerlionClient } from './use-merlion-client'
+
+export const useDelegation = (
+  validatorAddr?: string,
+  delegatorAddr?: string,
+) => {
+  const merlionClient = useMerlionClient()
+
+  return useQuery(
     ['validators', validatorAddr, delegatorAddr],
     async () => {
       try {
@@ -28,5 +34,6 @@ export const useDelegation = (validatorAddr?: string, delegatorAddr?: string) =>
         console.error(error)
       }
     },
-    { enabled: !!validatorAddr && !!delegatorAddr },
+    { enabled: !!(merlionClient && validatorAddr && delegatorAddr) },
   )
+}

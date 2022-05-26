@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { MerlionClient } from '@merlion/sdk'
 
 import { useKeplr } from './use-keplr'
@@ -9,18 +9,20 @@ export const useMerlionClient = () => {
 
   const [merlionClient, setMerlionClient] = useState<MerlionClient>()
 
-  useEffect(() => {
-    if (signer) {
-      setMerlionClient(
-        new MerlionClient({
-          grpcWebUrl: process.env.grpcWebUrl,
-          signer,
-          address,
-          chainId: CHAIN_ID,
-        }),
-      )
-    }
+  const createMerlionClient = useCallback(async () => {
+    setMerlionClient(
+      await MerlionClient.create({
+        grpcWebUrl: process.env.grpcWebUrl,
+        signer,
+        address,
+        chainId: CHAIN_ID,
+      }),
+    )
   }, [signer, address])
+
+  useEffect(() => {
+    void createMerlionClient()
+  }, [createMerlionClient])
 
   return merlionClient
 }

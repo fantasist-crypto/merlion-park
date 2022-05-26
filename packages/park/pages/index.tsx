@@ -1,13 +1,14 @@
-import type { FC } from 'react'
-import type { GetStaticProps } from 'next'
+import { FC, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
-export const getStaticProps: GetStaticProps = () => ({
-  redirect: {
-    destination: '/validators',
-    permanent: false,
-  },
-})
+const Home: FC = () => {
+  const router = useRouter()
 
-const Home: FC = () => null
+  useEffect(() => {
+    void router.replace(`/validators`)
+  }, [router])
+
+  return null
+}
 
 export default Home

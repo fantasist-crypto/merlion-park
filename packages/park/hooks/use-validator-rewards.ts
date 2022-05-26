@@ -1,22 +1,31 @@
 import { useQuery } from 'react-query'
 import BigNumber from 'bignumber.js'
 
-import { merlionClient } from '@/constants'
+import { useMerlionClient } from './use-merlion-client'
 
-export const useValidatorRewards = (validatorAddress: string) =>
-  useQuery(['validators', validatorAddress, 'rewards'], async () => {
-    const { status, response } =
-      await merlionClient.query.distribution.validatorOutstandingRewards({
-        validatorAddress: validatorAddress,
-      })
-    if (status.code !== 'OK')
-      throw new Error(`get validator '${validatorAddress}' rewards error`)
+export const useValidatorRewards = (validatorAddress: string) => {
+  const merlionClient = useMerlionClient()
 
-    // only support lion
-    const coin = response.rewards?.rewards.find(
-      (c) => c.denom.toLowerCase() === 'alion',
-    )
-    const amount = new BigNumber(coin?.amount ?? 0)
+  return useQuery(
+    ['validators', validatorAddress, 'rewards'],
+    async () => {
+      if (!merlionClient) return null
 
-    return { amount, denom: 'lion' }
-  })
+      const { status, response } =
+        await merlionClient.query.distribution.validatorOutstandingRewards({
+          validatorAddress: validatorAddress,
+        })
+      if (status.code !== 'OK')
+        throw new Error(`get validator '${validatorAddress}' rewards error`)
+
+      // only support lion
+      const coin = response.rewards?.rewards.find(
+        (c) => c.denom.toLowerCase() === 'alion',
+      )
+      const amount = new BigNumber(coin?.amount ?? 0)
+
+      return { amount, denom: 'lion' }
+    },
+    { enabled: !!(merlionClient && validatorAddress) },
+  )
+}

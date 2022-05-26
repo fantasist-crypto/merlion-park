@@ -22,7 +22,7 @@ export const Layout: FC<LayoutProps> = ({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{title}</title>
       </Head>
-      <Header />
+      <Header className="bg-white dark:bg-neutral-800" />
       <main className="py-16 px-6 xl:px-0">{children}</main>
       <footer />
     </>

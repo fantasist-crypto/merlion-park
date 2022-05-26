@@ -1,13 +1,30 @@
 import { useQuery } from 'react-query'
-import type { QueryValidatorsRequest } from '@merlion/proto/cosmos/staking/v1beta1/query'
 
-import { merlionClient } from '@/constants'
+import { useMerlionClient } from './use-merlion-client'
 
-export const useValidators = (params: QueryValidatorsRequest) =>
-  useQuery(['validators'], async () => {
-    const { response, status } = await merlionClient.query.staking.validators(
-      params,
-    )
-    if (status.code !== 'OK') throw new Error('get valodators error')
-    return response
-  })
+export const useValidators = (params: { status: string }) => {
+  const merlionClient = useMerlionClient()
+
+  return useQuery(
+    ['validators', params.status],
+    async () => {
+      if (!merlionClient) return null
+
+      const { PageRequest } = await import(
+        '@merlion/proto/cosmos/base/query/v1beta1/pagination'
+      )
+
+      const { response, status } = await merlionClient.query.staking.validators(
+        {
+          status: params.status,
+          pagination: PageRequest.create({ limit: '9999' }),
+        },
+      )
+
+      if (status.code !== 'OK') throw new Error('get valodators error')
+
+      return response
+    },
+    { enabled: !!merlionClient },
+  )
+}

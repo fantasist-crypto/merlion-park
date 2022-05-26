@@ -1,6 +1,6 @@
-import type { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
 import type { Any } from '@merlion/proto/google/protobuf/any'
-import { decodePubKey } from '@merlion/sdk'
+import { decodePubKey, PubKey } from '@merlion/sdk'
 import { FiKey, FiLink, FiUser } from 'react-icons/fi'
 import { ExternalLinkIcon, DuplicateIcon } from '@heroicons/react/outline'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
@@ -16,7 +16,13 @@ export const Address: FC<AddressProps> = ({
   validatorAddr,
   validatorPubKey,
 }) => {
-  const pubKey = decodePubKey(validatorPubKey)
+  const [pubKey, setPubKey] = useState<PubKey>(null)
+
+  useEffect(() => {
+    decodePubKey(validatorPubKey).then((pubKey) => {
+      setPubKey(pubKey)
+    })
+  }, [validatorPubKey])
 
   return (
     <div className="rounded-md bg-white px-6 dark:bg-slate-700">
@@ -46,7 +52,7 @@ export const Address: FC<AddressProps> = ({
           <div>
             <div className="text-sm font-medium">Operator Address</div>
             <CopyToClipboard text={validatorAddr}>
-              <div className="flex cursor-pointer items-center text-xs text-sm text-slate-600 dark:text-slate-400">
+              <div className="flex cursor-pointer items-center text-xs text-slate-600 dark:text-slate-400">
                 {`${validatorAddr}`}
                 &nbsp;
                 <DuplicateIcon className="h-4 w-4 hover:text-cyan-600" />
