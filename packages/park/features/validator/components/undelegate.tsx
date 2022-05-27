@@ -6,6 +6,8 @@ import BigNumber from 'bignumber.js'
 
 import { useAsync, useDelegation, useKeplr, useMerlionClient } from '@/hooks'
 import { classNames, formatCoin, getErrorMessage, parseCoin } from '@/utils'
+import { EXPLORER_URL } from '@/constants'
+import { HiOutlineExternalLink } from 'react-icons/hi'
 
 export interface UndelegateProps {
   validatorAddr?: string
@@ -26,15 +28,30 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
     [balance],
   )
 
-  // TODO
   const { execute, status } = useAsync(async ({ amount }: Inputs) => {
     try {
-      const res = await merlionClient?.tx.staking.undelegate({
+      const { transactionHash } = await merlionClient?.tx.staking.undelegate({
         delegatorAddress: address,
         validatorAddress: validatorAddr,
         amount: parseCoin({ amount, denom: 'lion' }),
       })
-      console.log(res)
+
+      toast.success(
+        <>
+          <h5 className="font-medium">Undelegate success</h5>
+          <a
+            href={`${EXPLORER_URL}/transactions/${transactionHash}`}
+            className="flex items-center hover:text-cyan-600 hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {`TxHash: ${transactionHash.slice(0, 6)}...${transactionHash.slice(
+              -6,
+            )}`}
+            <HiOutlineExternalLink className="ml-2" />
+          </a>
+        </>,
+      )
     } catch (error) {
       toast.error(getErrorMessage(error).message)
     }
@@ -63,7 +80,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
 
   const closeModal = () => {
     setIsOpen(false)
-    setTimeout(() => reset({ amount: '0' }), 0)
+    setTimeout(() => reset({ amount: '' }))
   }
 
   const openModal = () => {
@@ -125,7 +142,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-slate-700">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all dark:bg-neutral-800">
                   <Dialog.Title
                     as="h3"
                     className="mb-6 text-lg font-medium leading-6"
@@ -139,7 +156,7 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
                     <label htmlFor="amount" className="mb-2 block font-medium">
                       Amount
                     </label>
-                    <div className="relative flex items-center rounded-lg px-4 py-3 dark:bg-slate-600">
+                    <div className="relative flex items-center rounded-lg px-4 py-3 dark:bg-neutral-700">
                       <span className="pr-4 font-semibold">LION</span>
                       <input
                         id="amount"
@@ -161,11 +178,33 @@ export const Undelegate: FC<UndelegateProps> = ({ validatorAddr }) => {
                     <div></div>
                     <button
                       className={classNames(
-                        'mt-3 block w-full rounded-full bg-cyan-600 py-3 font-medium text-slate-50',
+                        'mt-3 block inline-flex w-full justify-center rounded-full bg-cyan-600 py-3 font-medium text-slate-50',
                         status === 'pending' && 'cursor-progress',
                       )}
                       disabled={status === 'pending'}
                     >
+                      {status === 'pending' && (
+                        <svg
+                          className="-ml-1 mr-3 h-5 w-5 animate-spin text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      )}
                       {status === 'pending' ? 'Pending' : 'Submit'}
                     </button>
                   </form>
