@@ -8,7 +8,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
  */
 const config = {
   env: {
-    grpcWebUrl: process.env.GRPC_WEB,
+    GRPC_WEB_URL: process.env.GRPC_WEB_URL,
+    EXPLORER_URL: process.env.EXPLORER_URL,
   },
 }
 

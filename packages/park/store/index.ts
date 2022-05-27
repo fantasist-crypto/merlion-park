@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 import createContext from 'zustand/context'
-import create from 'zustand'
+import create, { StoreApi } from 'zustand'
 
 import { KeplrSlice, createKeplrSlice } from './keplr'
 
 export interface RootState extends KeplrSlice {}
 
-const zustandContext = createContext()
+const zustandContext = createContext<StoreApi<RootState>>()
 
 export const ZustandProvider = zustandContext.Provider
 

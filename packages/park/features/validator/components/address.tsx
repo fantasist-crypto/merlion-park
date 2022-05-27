@@ -25,7 +25,7 @@ export const Address: FC<AddressProps> = ({
   }, [validatorPubKey])
 
   return (
-    <div className="rounded-md bg-white px-6 dark:bg-slate-700">
+    <div className="rounded-md bg-white px-6 dark:bg-neutral-800">
       <h3 className="border-b py-4 text-lg font-medium dark:border-b-slate-600">
         Address
       </h3>

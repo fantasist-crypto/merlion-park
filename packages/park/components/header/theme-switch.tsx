@@ -22,7 +22,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
       <label className="sr-only" id="headlessui-listbox-label-3">
         Theme
       </label>
-      <Popover.Button className="block h-6 w-6 text-2xl text-cyan-600">
+      <Popover.Button className="block h-6 w-6 text-2xl text-cyan-600 dark:text-neutral-50">
         <SunIcon className="block dark:hidden" />
         <MoonIcon className="hidden dark:block" />
       </Popover.Button>
@@ -37,7 +37,7 @@ export const ThemeSwitch: FC<ThemeSwitchProps> = ({ className }) => {
       >
         <Popover.Panel
           as="ul"
-          className="dark:highlight-white/5 absolute -right-4 top-full z-50 mt-6 w-36 overflow-hidden rounded-lg bg-white py-1 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-slate-900/10 dark:bg-slate-800 dark:text-slate-300 dark:ring-0"
+          className="dark:highlight-white/5 absolute -right-4 top-full z-50 mt-6 w-36 overflow-hidden rounded-lg bg-white py-1 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-slate-900/10 dark:bg-neutral-800 dark:text-slate-300 dark:ring-0"
         >
           {({ close }) => (
             <>

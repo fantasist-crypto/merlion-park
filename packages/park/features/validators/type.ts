@@ -14,4 +14,5 @@ export interface Validator {
     amount: string
     denom: string
   }
+  status: number
 }

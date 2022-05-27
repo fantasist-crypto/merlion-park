@@ -10,16 +10,17 @@ import {
 import { Validator } from './type'
 import BigNumber from 'bignumber.js'
 import { LION_DECIMAL } from '@/constants'
-import numeral from 'numeral'
 
-export const useValidatorsData = () => {
+export const useValidatorsData = (
+  { status = '' }: { status?: string } = { status: '' },
+) => {
   const merlionClient = useMerlionClient()
   const { data: pool, isLoading: isPoolLoading } = usePool()
   const { data: oracleParams, isLoading: isOracleParamsLoading } =
     useOracleParams()
 
   const { data: validatorsData, isLoading: isValidatorsLoading } =
-    useValidators({ status: '' })
+    useValidators({ status })
 
   const missCounters = useQueries({
     queries:
@@ -95,6 +96,7 @@ export const useValidatorsData = () => {
         commission,
         uptime,
         rewards: { amount, denom },
+        status: validator.status,
       }
     })
   }, [missCounters, validatorsData, oracleParams, pool, validatorRewards])

@@ -20,7 +20,7 @@ export const Validator: FC = () => {
       </div>
       <div className="mx-auto max-w-screen-lg items-start space-y-10 lg:flex lg:space-y-0 lg:space-x-6">
         <div className="flex-[3] space-y-10">
-          <div className="flex rounded-md bg-white p-6 dark:bg-slate-700">
+          <div className="flex rounded-md bg-white p-6 dark:bg-neutral-800">
             <div className="h-16 w-16 overflow-hidden rounded-full border-0 bg-slate-300">
               {/* TODO */}
             </div>

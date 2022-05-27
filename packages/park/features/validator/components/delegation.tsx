@@ -17,7 +17,7 @@ export const Delegation: FC<DelegationProps> = ({ validatorAddr }) => {
   const balance = useMemo(() => data && formatCoin(data.balance), [data])
 
   return (
-    <div className="flex-[2] space-y-6 rounded-md bg-white p-6 dark:bg-slate-700">
+    <div className="flex-[2] space-y-6 rounded-md bg-white p-6 dark:bg-neutral-800">
       <h3 className="font-medium">My delegations</h3>
       <div>
         <div>

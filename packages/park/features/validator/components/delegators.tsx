@@ -24,7 +24,7 @@ export const Delegators: FC<DelegatorsProps> = ({ validatorAddr }) => {
   const { data, isLoading } = useDelegators(validatorAddr)
 
   return (
-    <div className="rounded-md bg-white p-6 dark:bg-slate-700">
+    <div className="rounded-md bg-white p-6 dark:bg-neutral-800">
       <h3 className="mb-6 border-b  pb-4 text-lg font-medium dark:border-b-slate-600">
         Delegators
       </h3>
