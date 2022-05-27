@@ -13,3 +13,4 @@ export * from './use-keplr'
 export * from './use-merlion-client'
 
 export * from './use-async'
+export * from './use-copy-to-clipboard'

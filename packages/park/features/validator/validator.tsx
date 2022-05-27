@@ -1,15 +1,22 @@
 import { FC } from 'react'
 import { useRouter } from 'next/router'
 import { DuplicateIcon } from '@heroicons/react/solid'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
+import { toast } from 'react-hot-toast'
 
 import { Layout } from '@/components'
-import { useValidator } from '@/hooks'
+import { useValidator, useCopyToClipboard } from '@/hooks'
 import { classNames } from '@/utils'
 import { CommissionCard, Delegators, Address, Delegation } from './components'
 
 export const Validator: FC = () => {
   const { query } = useRouter()
+  const { copy } = useCopyToClipboard()
+
+  const copyAddress = async (address?: string) => {
+    if (!address) return
+    await copy(address)
+    toast.success('Copied!')
+  }
 
   const { data, isLoading } = useValidator(query.addr as string)
 
@@ -39,21 +46,22 @@ export const Validator: FC = () => {
                   Active
                 </span>
               </div>
-              <CopyToClipboard text={data?.operatorAddress ?? ''}>
-                <div className="flex cursor-pointer items-center text-sm text-slate-600 dark:text-slate-400">
-                  <span
-                    className={classNames(
-                      'inline-block',
-                      (!query.addr || isLoading) &&
-                        'h-4 w-80 animate-pulse rounded bg-slate-100 dark:bg-slate-600',
-                    )}
-                  >
-                    {data?.operatorAddress}
-                  </span>
-                  &nbsp;
-                  <DuplicateIcon className="h-4 w-4 hover:text-cyan-600" />
-                </div>
-              </CopyToClipboard>
+              <div
+                className="flex cursor-pointer items-center text-sm text-slate-600 hover:text-cyan-600 dark:text-slate-400"
+                onClick={() => copyAddress(data?.operatorAddress)}
+              >
+                <span
+                  className={classNames(
+                    'inline-block',
+                    (!query.addr || isLoading) &&
+                      'h-4 w-80 animate-pulse rounded bg-slate-100 dark:bg-slate-600',
+                  )}
+                >
+                  {data?.operatorAddress}
+                </span>
+                &nbsp;
+                <DuplicateIcon className="h-4 w-4" />
+              </div>
               {data?.description?.website && (
                 <a
                   className="mt-0.5 text-sm text-cyan-600 hover:underline"

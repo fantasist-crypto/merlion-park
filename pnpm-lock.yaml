@@ -51,7 +51,6 @@ importers:
       numeral: ^2.0.6
       postcss: ^8.4.12
       react: ^18.1.0
-      react-copy-to-clipboard: ^5.1.0
       react-dom: ^18.1.0
       react-hook-form: ^7.31.2
       react-hot-toast: ^2.2.0
@@ -70,7 +69,6 @@ importers:
       fuse.js: 6.6.2
       numeral: 2.0.6
       react: 18.1.0
-      react-copy-to-clipboard: 5.1.0_react@18.1.0
       react-dom: 18.1.0_react@18.1.0
       react-hook-form: 7.31.2_react@18.1.0
       react-hot-toast: 2.2.0_2bum4g2y5s4cgzgzu5mbjuolai
@@ -1017,12 +1015,6 @@ packages:
 
   /concat-map/0.0.1:
     resolution: {integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=}
-
-  /copy-to-clipboard/3.3.1:
-    resolution: {integrity: sha512-i13qo6kIHTTpCm8/Wup+0b1mVWETvu2kIMzKoK8FpkLkFxlt0znUAHcMzox+T8sPlqtZXq3CulEjQHsYiGFJUw==}
-    dependencies:
-      toggle-selection: 1.0.6
-    dev: false
 
   /core-js-pure/3.22.5:
     resolution: {integrity: sha512-8xo9R00iYD7TcV7OrC98GwxiUEAabVWO3dix+uyWjnYrx9fyASLlIX+f/3p5dW5qByaP2bcZ8X/T47s55et/tA==}
@@ -2289,6 +2281,7 @@ packages:
   /object-assign/4.1.1:
     resolution: {integrity: sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=}
     engines: {node: '>=0.10.0'}
+    dev: true
 
   /object-hash/3.0.0:
     resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
@@ -2547,6 +2540,7 @@ packages:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
+    dev: true
 
   /protobufjs/6.10.3:
     resolution: {integrity: sha512-yvAslS0hNdBhlSKckI4R1l7wunVilX66uvrjzE4MimiAt7/qw1nLpMhZrn/ObuUTM/c3Xnfl01LYMdcSJe6dwg==}
@@ -2608,16 +2602,6 @@ packages:
       safe-buffer: 5.2.1
     dev: true
 
-  /react-copy-to-clipboard/5.1.0_react@18.1.0:
-    resolution: {integrity: sha512-k61RsNgAayIJNoy9yDsYzDe/yAZAzEbEgcz3DZMhF686LEyukcE1hzurxe85JandPUG+yTfGVFzuEw3xt8WP/A==}
-    peerDependencies:
-      react: ^15.3.0 || 16 || 17 || 18
-    dependencies:
-      copy-to-clipboard: 3.3.1
-      prop-types: 15.8.1
-      react: 18.1.0
-    dev: false
-
   /react-dom/18.1.0_react@18.1.0:
     resolution: {integrity: sha512-fU1Txz7Budmvamp7bshe4Zi32d0ll7ect+ccxNu9FlObT605GOEB8BfO4tmRJ39R5Zj831VCpvQ05QPBW5yb+w==}
     peerDependencies:
@@ -2660,6 +2644,7 @@ packages:
 
   /react-is/16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
+    dev: true
 
   /react-query/4.0.0-beta.13_ef5jwxihqo6n7gxfmzogljlgcm:
     resolution: {integrity: sha512-CnDuiD4IWGh2nesnAqMlUbXhcw7ZSZZ5JwfQyv3a8OIAs7NoHvtNWlIH88kcOWDZjC7eGALrjnwsWpCK45jjtw==}
@@ -2991,10 +2976,6 @@ packages:
     dependencies:
       is-number: 7.0.0
     dev: true
-
-  /toggle-selection/1.0.6:
-    resolution: {integrity: sha1-bkWxJj8gF/oKzH2J14sVuL932jI=}
-    dev: false
 
   /totalist/1.1.0:
     resolution: {integrity: sha512-gduQwd1rOdDMGxFG1gEvhV88Oirdo2p+KjoYFU7k2g+i7n6AFFbDQ5kMPUsW0pNbfQsB/cwXvT1i4Bue0s9g5g==}

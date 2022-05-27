@@ -3,9 +3,10 @@ import type { Any } from '@merlion/proto/google/protobuf/any'
 import { decodePubKey, PubKey } from '@merlion/sdk'
 import { FiKey, FiLink, FiUser } from 'react-icons/fi'
 import { ExternalLinkIcon, DuplicateIcon } from '@heroicons/react/outline'
-import { CopyToClipboard } from 'react-copy-to-clipboard'
 
 import { validatorToDelegatorAddress } from '@/utils'
+import { useCopyToClipboard } from '@/hooks'
+import { toast } from 'react-hot-toast'
 
 export interface AddressProps {
   validatorAddr: string
@@ -17,6 +18,13 @@ export const Address: FC<AddressProps> = ({
   validatorPubKey,
 }) => {
   const [pubKey, setPubKey] = useState<PubKey>(null)
+  const { copy } = useCopyToClipboard()
+
+  const copyAddress = async (address?: string) => {
+    if (!address) return
+    await copy(address)
+    toast.success('Copied!')
+  }
 
   useEffect(() => {
     decodePubKey(validatorPubKey).then((pubKey) => {
@@ -51,13 +59,14 @@ export const Address: FC<AddressProps> = ({
           </div>
           <div>
             <div className="text-sm font-medium">Operator Address</div>
-            <CopyToClipboard text={validatorAddr}>
-              <div className="flex cursor-pointer items-center text-xs text-slate-600 dark:text-slate-400">
-                {`${validatorAddr}`}
-                &nbsp;
-                <DuplicateIcon className="h-4 w-4 hover:text-cyan-600" />
-              </div>
-            </CopyToClipboard>
+            <div
+              className="flex cursor-pointer items-center text-xs text-slate-600 hover:text-cyan-600 dark:text-slate-400"
+              onClick={() => copyAddress(validatorAddr)}
+            >
+              {`${validatorAddr}`}
+              &nbsp;
+              <DuplicateIcon className="h-4 w-4" />
+            </div>
           </div>
         </li>
         <li className="flex space-x-3">
@@ -69,13 +78,14 @@ export const Address: FC<AddressProps> = ({
               Consensus Public Key
               <span className="text-xs">({pubKey?.type})</span>
             </div>
-            <CopyToClipboard text={pubKey?.value ?? ''}>
-              <div className="flex cursor-pointer items-center text-xs text-slate-600 dark:text-slate-400">
-                {pubKey?.value as string}
-                &nbsp;
-                <DuplicateIcon className="h-4 w-4 hover:text-cyan-600" />
-              </div>
-            </CopyToClipboard>
+            <div
+              className="flex cursor-pointer items-center text-xs text-slate-600 hover:text-cyan-600 dark:text-slate-400"
+              onClick={() => copyAddress(pubKey?.value as string)}
+            >
+              {pubKey?.value as string}
+              &nbsp;
+              <DuplicateIcon className="h-4 w-4" />
+            </div>
           </div>
         </li>
       </ul>
