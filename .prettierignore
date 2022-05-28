@@ -1,5 +1,2 @@
-dist/
-build/
 .next/
-proto/
 pnpm-lock.yaml

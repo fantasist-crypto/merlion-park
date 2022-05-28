@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react'
-import type { Any } from '@merlion/proto/google/protobuf/any'
-import { decodePubKey, PubKey } from '@merlion/sdk'
+import type { Any } from '@merjs/proto/google/protobuf/any'
+import { decodePubKey, PubKey } from '@merjs/core'
 import { FiKey, FiLink, FiUser } from 'react-icons/fi'
 import { ExternalLinkIcon, DuplicateIcon } from '@heroicons/react/outline'
 

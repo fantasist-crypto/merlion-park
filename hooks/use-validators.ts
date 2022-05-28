@@ -11,7 +11,7 @@ export const useValidators = (params: { status: string }) => {
       if (!merlionClient) return null
 
       const { PageRequest } = await import(
-        '@merlion/proto/cosmos/base/query/v1beta1/pagination'
+        '@merjs/proto/cosmos/base/query/v1beta1/pagination'
       )
 
       const { response, status } = await merlionClient.query.staking.validators(

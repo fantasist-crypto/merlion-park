@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand'
-import { OfflineSigner } from '@merlion/sdk'
+import { OfflineSigner } from '@merjs/core'
 
 import { CHAIN_ID, CHAIN_INFO } from '@/constants'
 

@@ -12,7 +12,7 @@ export const useDelegators = (validatorAddr?: string) => {
         await merlionClient.query.staking.validatorDelegations({
           validatorAddr,
           pagination: (
-            await import('@merlion/proto/cosmos/base/query/v1beta1/pagination')
+            await import('@merjs/proto/cosmos/base/query/v1beta1/pagination')
           ).PageRequest.create({ limit: '10' }),
         })
       if (status.code !== 'OK') throw new Error()

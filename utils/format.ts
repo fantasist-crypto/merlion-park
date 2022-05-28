@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js'
 
-import type { CommissionRates } from '@merlion/proto/cosmos/staking/v1beta1/staking'
+import type { CommissionRates } from '@merjs/proto/cosmos/staking/v1beta1/staking'
 
 export function shortenAddress(address: string, chars = 4): string {
   // TODO: check address

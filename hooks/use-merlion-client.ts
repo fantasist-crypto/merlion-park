@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react'
-import { MerlionClient } from '@merlion/sdk'
+import { MerlionClient } from '@merjs/core'
 
 import { CHAIN_ID, GRPC_WEB_URL } from '@/constants'
 import { useKeplr } from './use-keplr'

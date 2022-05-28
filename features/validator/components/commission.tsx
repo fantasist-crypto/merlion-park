@@ -1,8 +1,8 @@
 import { FC, useMemo } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import numeral from 'numeral'
-import type { Commission } from '@merlion/proto/cosmos/staking/v1beta1/staking'
-import { Timestamp } from '@merlion/proto/google/protobuf/timestamp'
+import type { Commission } from '@merjs/proto/cosmos/staking/v1beta1/staking'
+import { Timestamp } from '@merjs/proto/google/protobuf/timestamp'
 
 import { classNames, formatCommissionRates } from '@/utils'
 
