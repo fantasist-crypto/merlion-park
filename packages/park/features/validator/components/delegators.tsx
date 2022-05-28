@@ -3,6 +3,7 @@ import type { FC } from 'react'
 import type { Coin } from '@/constants'
 import { useDelegators } from '@/hooks'
 import { classNames, formatCoin, shortenAddress } from '@/utils'
+import { EXPLORER_URL } from '@/constants'
 
 export interface DelegatorsProps {
   validatorAddr: string
@@ -56,8 +57,10 @@ export const Delegators: FC<DelegatorsProps> = ({ validatorAddr }) => {
           >
             <div>
               <a
-                href="@/features/validator/components/delegators#"
+                href={`${EXPLORER_URL}/accounts/${d.delegation?.delegatorAddress}`}
                 className="font-medium hover:text-cyan-600"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 {shortenAddress(d.delegation?.delegatorAddress)}
               </a>

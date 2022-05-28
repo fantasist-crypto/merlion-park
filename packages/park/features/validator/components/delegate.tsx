@@ -8,7 +8,7 @@ import BigNumber from 'bignumber.js'
 import { useAsync, useKeplr, useMerlionClient } from '@/hooks'
 import { classNames, formatCoin, getErrorMessage, parseCoin } from '@/utils'
 import { useBalance } from '@/hooks'
-import { EXPLORER_URL } from '@/constants'
+import { EXPLORER_URL, LION } from '@/constants'
 
 export interface DelegateProps {
   validatorAddr?: string
@@ -19,10 +19,10 @@ interface Inputs {
 }
 
 export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
-  const { address } = useKeplr()
+  const { address, isActive } = useKeplr()
   const merlionClient = useMerlionClient()
 
-  const { data } = useBalance(address, 'alion')
+  const { data } = useBalance(address, LION.coinMinimalDenom)
   const balance = useMemo(() => data && formatCoin(data), [data])
 
   // TODO
@@ -31,7 +31,7 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
       const { transactionHash } = await merlionClient?.tx.staking.delegate({
         delegatorAddress: address,
         validatorAddress: validatorAddr,
-        amount: parseCoin({ amount, denom: 'lion' }),
+        amount: parseCoin({ amount, denom: LION.coinDenom }),
       })
 
       toast.success(
@@ -82,6 +82,10 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
   }
 
   const openModal = () => {
+    if (!isActive) {
+      toast.error('Connect wallet first!')
+      return
+    }
     setIsOpen(true)
   }
 
@@ -92,7 +96,7 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
       const amount = new BigNumber(value)
 
       if (amount.lte(0)) return 'Amount must be greater than 0'
-      if (amount.gte(balance.amount)) return 'Insufficient balance'
+      if (amount.gte(balance?.amount)) return 'Insufficient balance'
 
       return true
     },
@@ -110,7 +114,7 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
       </button>
 
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
+        <Dialog as="div" className="relative z-50" onClose={closeModal}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"

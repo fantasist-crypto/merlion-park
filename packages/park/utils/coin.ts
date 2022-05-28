@@ -7,7 +7,7 @@ export const parseCoin = (coin: Coin): Coin => {
     (c) => coin.denom === c.denom || coin.denom === c.minDenom,
   )
 
-  if (!currency) throw new Error(`not supported coin: ${coin}`)
+  if (!currency) throw new Error(`not supported coin: ${coin.denom}`)
 
   const amount = new BigNumber(coin.amount)
 
@@ -28,7 +28,7 @@ export function formatCoin(coin: Coin, decimalPlaces: number = 6): Coin {
     (c) => coin.denom === c.denom || coin.denom === c.minDenom,
   )
 
-  if (!currency) throw new Error(`not supported coin: ${coin}`)
+  if (!currency) throw new Error(`not supported coin: ${coin.denom}`)
 
   const amount = new BigNumber(coin.amount)
 

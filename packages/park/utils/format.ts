@@ -4,7 +4,7 @@ import type { CommissionRates } from '@merlion/proto/cosmos/staking/v1beta1/stak
 
 export function shortenAddress(address: string, chars = 4): string {
   // TODO: check address
-  return `${address.slice(0, 5)}...${address.slice(-chars)}`
+  return `${address.slice(0, 4)}...${address.slice(-chars)}`
 }
 
 const DECIMAL = '1000000000000000000'

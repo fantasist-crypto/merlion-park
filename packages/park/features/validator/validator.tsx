@@ -1,6 +1,7 @@
 import { FC } from 'react'
 import { useRouter } from 'next/router'
 import { DuplicateIcon } from '@heroicons/react/solid'
+import { HiOutlineExternalLink } from 'react-icons/hi'
 import { toast } from 'react-hot-toast'
 
 import { Layout } from '@/components'
@@ -35,7 +36,7 @@ export const Validator: FC = () => {
               <div className="mb-0.5 flex items-center">
                 <h2
                   className={classNames(
-                    'text-2xl font-semibold',
+                    'w-32 truncate text-2xl font-semibold sm:w-auto',
                     (!query.addr || isLoading) &&
                       'mb-1 h-8 w-32 animate-pulse rounded bg-slate-100 dark:bg-slate-600',
                   )}
@@ -52,9 +53,9 @@ export const Validator: FC = () => {
               >
                 <span
                   className={classNames(
-                    'inline-block',
+                    'inline-block w-32 truncate sm:w-auto',
                     (!query.addr || isLoading) &&
-                      'h-4 w-80 animate-pulse rounded bg-slate-100 dark:bg-slate-600',
+                      'w-49 h-4 animate-pulse rounded bg-slate-100 dark:bg-slate-600 sm:w-80',
                   )}
                 >
                   {data?.operatorAddress}
@@ -64,10 +65,15 @@ export const Validator: FC = () => {
               </div>
               {data?.description?.website && (
                 <a
-                  className="mt-0.5 text-sm text-cyan-600 hover:underline"
+                  className="mt-0.5 flex items-center truncate text-sm text-cyan-600 hover:underline"
                   href={data?.description.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  {data?.description?.website}
+                  <span className="w-40 truncate sm:w-auto">
+                    {data?.description?.website}
+                  </span>
+                  <HiOutlineExternalLink className="ml-1" />
                 </a>
               )}
             </div>

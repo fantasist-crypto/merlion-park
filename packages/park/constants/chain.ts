@@ -2,12 +2,12 @@ import type { ChainInfo, Currency } from '@keplr-wallet/types'
 
 export const CHAIN_ID = 'merlion_5000-101'
 
-export const BECH32_PREFIX = 'mer'
+export const BECH32_PREFIX = process.env.BECH32_PREFIX
 
 export const LION: Currency = {
-  coinDenom: 'lion',
-  coinMinimalDenom: 'alion',
-  coinDecimals: 18,
+  coinDenom: process.env.DENOM,
+  coinMinimalDenom: process.env.MINIMAL_DENOM,
+  coinDecimals: Number(process.env.DECIMALS),
 }
 
 export const CHAIN_INFO: ChainInfo = {

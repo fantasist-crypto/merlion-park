@@ -48,7 +48,9 @@ export const Address: FC<AddressProps> = ({
               href="@/features/validator/components/address#"
               className="flex items-center text-xs text-cyan-600"
             >
-              {validatorAddr && validatorToDelegatorAddress(validatorAddr)}
+              <span className="inline-block w-48 truncate sm:w-auto">
+                {validatorAddr && validatorToDelegatorAddress(validatorAddr)}
+              </span>
               <ExternalLinkIcon className="h-4 w-4" />
             </a>
           </div>
@@ -63,7 +65,9 @@ export const Address: FC<AddressProps> = ({
               className="flex cursor-pointer items-center text-xs text-slate-600 hover:text-cyan-600 dark:text-slate-400"
               onClick={() => copyAddress(validatorAddr)}
             >
-              {`${validatorAddr}`}
+              <span className="inline-block w-48 truncate sm:w-auto">
+                {`${validatorAddr}`}
+              </span>
               &nbsp;
               <DuplicateIcon className="h-4 w-4" />
             </div>
@@ -82,7 +86,9 @@ export const Address: FC<AddressProps> = ({
               className="flex cursor-pointer items-center text-xs text-slate-600 hover:text-cyan-600 dark:text-slate-400"
               onClick={() => copyAddress(pubKey?.value as string)}
             >
-              {pubKey?.value as string}
+              <span className="inline-block w-48 truncate sm:w-auto">
+                {pubKey?.value as string}
+              </span>
               &nbsp;
               <DuplicateIcon className="h-4 w-4" />
             </div>

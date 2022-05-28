@@ -14,11 +14,16 @@ export const createKeplrSlice: StateCreator<KeplrSlice> = (set) => ({
   isActive: false,
   address: undefined,
   connect: async () => {
+    if (window === undefined) return
+
+    // TODO
+    if (window.keplr === undefined) return
+
     try {
       await window.keplr.enable(CHAIN_ID)
     } catch {
       await window.keplr
-        .experimentalSuggestChain(CHAIN_INFO)
+        ?.experimentalSuggestChain(CHAIN_INFO)
         .catch((error) => console.error(error))
     }
 

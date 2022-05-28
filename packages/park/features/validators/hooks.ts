@@ -9,7 +9,7 @@ import {
 } from '@/hooks'
 import { Validator } from './type'
 import BigNumber from 'bignumber.js'
-import { LION_DECIMAL } from '@/constants'
+import { LION, LION_DECIMAL } from '@/constants'
 
 export const useValidatorsData = (
   { status = '' }: { status?: string } = { status: '' },
@@ -49,11 +49,11 @@ export const useValidatorsData = (
             })
 
           const coin = response.rewards?.rewards.find(
-            (c) => c.denom.toLowerCase() === 'alion',
+            (c) => c.denom.toLowerCase() === LION.coinMinimalDenom,
           )
           const amount = new BigNumber(coin?.amount ?? 0).toString()
 
-          return { amount, denom: 'lion' }
+          return { amount, denom: LION.coinMinimalDenom }
         },
         enabled: !!merlionClient,
       })) ?? [],
@@ -82,7 +82,7 @@ export const useValidatorsData = (
           ? 1 - Number(new BigNumber(missCounter).div(slashWindow).toFixed(4))
           : null
 
-      const denom = validatorRewards[index].data?.denom ?? ''
+      // const denom = validatorRewards[index].data?.denom ?? ''
       const rewardAmount = validatorRewards[index].data?.amount
       const amount = new BigNumber(rewardAmount ?? 0)
         .div(validator.tokens)
@@ -95,7 +95,7 @@ export const useValidatorsData = (
         votingPower,
         commission,
         uptime,
-        rewards: { amount, denom },
+        rewards: { amount, denom: LION.coinDenom },
         status: validator.status,
       }
     })

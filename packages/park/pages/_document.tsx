@@ -27,7 +27,7 @@ try {
           }}
         />
       </Head>
-      <body className="bg-neutral-50 font-sans text-neutral-900 dark:bg-neutral-900 dark:text-white">
+      <body className="bg-gray-50 font-sans text-neutral-900 dark:bg-neutral-900 dark:text-white">
         <Main />
         <NextScript />
       </body>

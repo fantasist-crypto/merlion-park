@@ -1,3 +1,5 @@
+import { LION } from './chain'
+
 export interface Currency {
   readonly denom: string
   readonly decimal: number
@@ -5,5 +7,9 @@ export interface Currency {
 }
 
 export const CURRENCIES: Currency[] = [
-  { denom: 'lion', decimal: 18, minDenom: 'alion' },
+  {
+    denom: LION.coinDenom,
+    decimal: LION.coinDecimals,
+    minDenom: LION.coinMinimalDenom,
+  },
 ]

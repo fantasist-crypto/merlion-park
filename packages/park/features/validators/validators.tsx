@@ -1,7 +1,6 @@
 import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { FaSortUp, FaSortDown } from 'react-icons/fa'
-import { BiUser } from 'react-icons/bi'
 import { HiOutlineExternalLink } from 'react-icons/hi'
 import numeral from 'numeral'
 import Fuse from 'fuse.js'
@@ -13,7 +12,7 @@ import { Skeleton } from './skeleton'
 import { useValidatorsData } from './hooks'
 
 // TODO
-numeral.nullFormat('')
+numeral.nullFormat('N/A')
 
 type SortBy = 'moniker' | 'votingPower' | 'commission' | 'uptime' | 'rewards'
 
@@ -109,7 +108,7 @@ export const Validators: FC = () => {
   return (
     <Layout>
       <div className="mx-auto max-w-screen-lg">
-        <h1 className="mb-4 text-4xl font-bold text-cyan-600">
+        <h1 className="mb-8 text-4xl font-bold text-cyan-600">
           Staking & Rewards
         </h1>
         <div className="rounded-lg bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 p-4 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 dark:opacity-80">
@@ -195,7 +194,7 @@ export const Validators: FC = () => {
               />
             </svg>
             <input
-              className="ml-2 h-10 w-full border-none bg-transparent outline-none focus:ring-0"
+              className="h-10 w-full border-none bg-transparent outline-none focus:ring-0"
               type="text"
               value={keyword}
               onChange={(e) => {
@@ -357,9 +356,11 @@ export const Validators: FC = () => {
                   sortResult.map((v, i) => (
                     <tr key={v.operatorAddress}>
                       <td className="flex items-center space-x-2 py-4 text-left text-base font-semibold">
-                        <BiUser className="h-10 w-10 rounded-full bg-gray-200 text-[1.5rem] text-neutral-800" />
+                        <div className="h-10 w-10 rounded-full bg-gray-200" />
                         <Link href={`/validators/${v.operatorAddress}`}>
-                          <a>{v.description.moniker}</a>
+                          <a className="hover:text-cyan-600">
+                            {v.description.moniker}
+                          </a>
                         </Link>
                         {v.description.identity && (
                           <svg
@@ -381,7 +382,8 @@ export const Validators: FC = () => {
                                 'w-20 animate-pulse rounded bg-slate-100',
                             )}
                           >
-                            {numeral(v.votingPower).format('0.00%')}
+                            {!isPoolLoading &&
+                              numeral(v.votingPower).format('0.00%')}
                           </div>
                         </div>
                       </td>
@@ -395,7 +397,9 @@ export const Validators: FC = () => {
                                 'w-20 animate-pulse rounded bg-slate-100',
                             )}
                           >
-                            {numeral(v.uptime).format('0.00%')}
+                            {!(
+                              missCounters[i].isLoading || isOracleParamsLoading
+                            ) && numeral(v.uptime).format('0.00%')}
                           </div>
                         </div>
                       </td>
@@ -408,13 +412,16 @@ export const Validators: FC = () => {
                                 'w-32 animate-pulse rounded bg-slate-100',
                             )}
                           >
-                            {`${
-                              !validatorRewards[i].isLoading
-                                ? Number(v.rewards.amount) > 1000
-                                  ? numeral(v.rewards.amount).format('0.00a')
-                                  : numeral(v.rewards.amount).format('0.000000')
-                                : ''
-                            } ${v.rewards.denom}`}
+                            {!validatorRewards[i].isLoading &&
+                              `${
+                                !validatorRewards[i].isLoading
+                                  ? Number(v.rewards.amount) > 1000
+                                    ? numeral(v.rewards.amount).format('0.00a')
+                                    : numeral(v.rewards.amount).format(
+                                        '0.000000',
+                                      )
+                                  : ''
+                              } ${v.rewards.denom}`}
                           </div>
                         </div>
                       </td>
