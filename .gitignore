@@ -11,5 +11,17 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# production
+/build
+
+# next.js
+/.next/
+/out/
+
 # misc
 .DS_Store
+*.pem
+
+# local env files
+.env.local
+.env.*.local

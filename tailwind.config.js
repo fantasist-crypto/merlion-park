@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * @type {import('tailwindcss/tailwind-config').TailwindConfig}
  */
@@ -8,8 +10,5 @@ module.exports = {
     './features/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
   ],
-  theme: {
-    extend: {},
-  },
   plugins: [require('@tailwindcss/forms')],
 }
