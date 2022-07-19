@@ -173,7 +173,7 @@ export const Delegate: FC<DelegateProps> = ({ validatorAddr }) => {
                     </div>
                     <button
                       className={classNames(
-                        'mt-5 block inline-flex w-full justify-center rounded-full bg-cyan-600 py-3 font-medium text-slate-50',
+                        'mt-5 inline-flex w-full justify-center rounded-full bg-cyan-600 py-3 font-medium text-slate-50',
                         status === 'pending' && 'cursor-not-allowed',
                       )}
                       disabled={status === 'pending'}

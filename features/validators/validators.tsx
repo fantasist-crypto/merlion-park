@@ -114,7 +114,7 @@ export const Validators: FC = () => {
         <div className="rounded-lg bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 p-4 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 dark:opacity-80">
           Tip: Stake Lion and earn rewards
         </div>
-        <div className="mb-4 mt-8 flex items-center justify-between border-b border-gray-200 text-neutral-600 dark:border-neutral-800 dark:border-gray-700 dark:text-neutral-400">
+        <div className="mb-4 mt-8 flex items-center justify-between border-b border-gray-200 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400">
           <ul
             className="-mb-px flex flex-wrap text-center text-sm font-medium"
             role="tablist"
@@ -143,7 +143,7 @@ export const Validators: FC = () => {
             <li
               className={classNames(
                 'mr-2 pb-2',
-                !isActive && 'border-b-2 border-gray-600',
+                !isActive && 'border-b-2 border-neutral-600',
               )}
               role="presentation"
             >
