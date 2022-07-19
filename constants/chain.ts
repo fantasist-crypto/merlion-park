@@ -1,20 +1,25 @@
 import type { ChainInfo, Currency } from '@keplr-wallet/types'
+import {
+  DENOM,
+  DECIMALS,
+  MINIMAL_DENOM,
+  BECH32_PREFIX,
+  CHAIN_ID,
+  RPC_ENDPOINT,
+  REST_ENDPOINT,
+} from './env'
 
-export const CHAIN_ID = 'merlion_5000-101'
-
-export const BECH32_PREFIX = process.env.BECH32_PREFIX
-
-export const LION: Currency = {
-  coinDenom: process.env.DENOM,
-  coinMinimalDenom: process.env.MINIMAL_DENOM,
-  coinDecimals: Number(process.env.DECIMALS),
+const LION: Currency = {
+  coinDenom: DENOM,
+  coinDecimals: DECIMALS,
+  coinMinimalDenom: MINIMAL_DENOM,
 }
 
 export const CHAIN_INFO: ChainInfo = {
   chainId: CHAIN_ID,
   chainName: 'Merlion Testnet',
-  rpc: process.env.rpcEndpoint,
-  rest: process.env.restEndpoint,
+  rpc: RPC_ENDPOINT,
+  rest: REST_ENDPOINT,
   bip44: {
     coinType: 60,
   },

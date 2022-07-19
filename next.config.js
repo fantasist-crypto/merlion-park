@@ -7,13 +7,18 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
  * @type {import('next').NextConfig}
  */
 const config = {
+  reactStrictMode: true,
   env: {
-    GRPC_WEB_URL: process.env.GRPC_WEB_URL,
-    EXPLORER_URL: process.env.EXPLORER_URL,
-    BECH32_PREFIX: process.env.BECH32_PREFIX,
-    MINIMAL_DENOM: process.env.MINIMAL_DENOM,
     DENOM: process.env.DENOM,
     DECIMALS: process.env.DECIMALS,
+    MINIMAL_DENOM: process.env.MINIMAL_DENOM,
+    BECH32_PREFIX: process.env.BECH32_PREFIX,
+    CHAIN_ID: process.env.CHAIN_ID,
+    CHAIN_NAME: process.env.CHAIN_NAME,
+    EXPLORER_URL: process.env.EXPLORER_URL,
+    RPC_ENDPOINT: process.env.RPC_ENDPOINT,
+    REST_ENDPOINT: process.env.REST_ENDPOINT,
+    GRPC_ENDPOINT: process.env.GRPC_ENDPOINT,
   },
 }
 

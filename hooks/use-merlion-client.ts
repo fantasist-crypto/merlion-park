@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from 'react'
 import { MerlionClient } from '@merjs/core'
 
-import { CHAIN_ID, GRPC_WEB_URL } from '@/constants'
+import { CHAIN_ID, GRPC_ENDPOINT } from '@/constants'
 import { useKeplr } from './use-keplr'
 
 export const useMerlionClient = () => {
@@ -12,7 +12,7 @@ export const useMerlionClient = () => {
   const createMerlionClient = useCallback(async () => {
     setMerlionClient(
       await MerlionClient.create({
-        grpcWebUrl: GRPC_WEB_URL,
+        grpcWebUrl: GRPC_ENDPOINT,
         signer,
         address,
         chainId: CHAIN_ID,

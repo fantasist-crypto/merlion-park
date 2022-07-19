@@ -49,11 +49,11 @@ export const useValidatorsData = (
             })
 
           const coin = response.rewards?.rewards.find(
-            (c) => c.denom.toLowerCase() === LION.coinMinimalDenom,
+            (c) => c.denom.toLowerCase() === LION.minDenom,
           )
           const amount = new BigNumber(coin?.amount ?? 0).toString()
 
-          return { amount, denom: LION.coinMinimalDenom }
+          return { amount, denom: LION.minDenom }
         },
         enabled: !!merlionClient,
       })) ?? [],
@@ -95,7 +95,7 @@ export const useValidatorsData = (
         votingPower,
         commission,
         uptime,
-        rewards: { amount, denom: LION.coinDenom },
+        rewards: { amount, denom: LION.denom },
         status: validator.status,
       }
     })
