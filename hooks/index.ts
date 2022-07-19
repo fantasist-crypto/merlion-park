@@ -11,6 +11,7 @@ export * from './use-balance'
 export * from './use-theme'
 export * from './use-keplr'
 export * from './use-merlion-client'
+export * from './queries'
 
 export * from './use-async'
 export * from './use-copy-to-clipboard'
