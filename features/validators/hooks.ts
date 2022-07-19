@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useQueries } from 'react-query'
+import { useQueries } from '@tanstack/react-query'
 
 import {
   useMerlionClient,

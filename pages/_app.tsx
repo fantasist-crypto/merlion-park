@@ -1,6 +1,6 @@
 import type { FC } from 'react'
 import type { AppProps } from 'next/app'
-import { QueryClientProvider } from 'react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { initializeStore, ZustandProvider } from '@/store'
 
 import { queryClient } from '@/constants'
