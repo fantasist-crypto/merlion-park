@@ -4,8 +4,8 @@ specifiers:
   '@headlessui/react': ^1.6.6
   '@heroicons/react': ^1.0.6
   '@keplr-wallet/types': ^0.10.13
-  '@merjs/core': ^0.0.6
-  '@merjs/proto': ^0.0.11
+  '@merjs/core': ^0.0.7
+  '@merjs/proto': ^0.0.12
   '@next/bundle-analyzer': ^12.2.2
   '@protobuf-ts/runtime-rpc': ^2.7.0
   '@tailwindcss/forms': ^0.5.2
@@ -43,8 +43,8 @@ specifiers:
 dependencies:
   '@headlessui/react': 1.6.6_biqbaboplfbrettd7655fr4n2y
   '@heroicons/react': 1.0.6_react@18.2.0
-  '@merjs/core': 0.0.6
-  '@merjs/proto': 0.0.11
+  '@merjs/core': 0.0.7
+  '@merjs/proto': 0.0.12
   '@tanstack/react-query': 4.0.3_biqbaboplfbrettd7655fr4n2y
   '@tanstack/react-table': 8.2.6_biqbaboplfbrettd7655fr4n2y
   bech32: 2.0.0
@@ -288,20 +288,20 @@ packages:
       - debug
     dev: true
 
-  /@merjs/core/0.0.6:
-    resolution: {integrity: sha512-bv/HeaoHAHoPXaEzGjGKlI8TjFbto15BOU+tgrAyF8ssz9kQPfwAhuasMrmA5E/Yt5UTXqUYdPc/NKSJZP9YLg==}
+  /@merjs/core/0.0.7:
+    resolution: {integrity: sha512-O5z5OCq4nXN+i53BegHMw9fgGVdMruansuaVKdRhapzRnOl1n2qBp6eKm+emP67Oqv0f3E/g1D69zlgbw617DA==}
     dependencies:
       '@cosmjs/amino': 0.28.11
       '@cosmjs/encoding': 0.28.11
-      '@merjs/proto': 0.0.11
+      '@merjs/proto': 0.0.12
       '@protobuf-ts/grpcweb-transport': 2.7.0
       '@protobuf-ts/runtime': 2.7.0
       bech32: 2.0.0
       bignumber.js: 9.0.2
     dev: false
 
-  /@merjs/proto/0.0.11:
-    resolution: {integrity: sha512-efjc0/jvnQZ7DFP+IUsEC2/pr8R2NxKJdiHMmRUe75jx4RLVwQIifjAnskc13FavarXd7/co12nGaKfCF3UnTA==}
+  /@merjs/proto/0.0.12:
+    resolution: {integrity: sha512-WQJgLVaP8e9xbZm4hpxvauLjp2y0Peu2JpzbwkAE/0F18K99ViDwHFx88XGQMqGJ3XTtr0EFvNWpJCxfuG8mUw==}
     dependencies:
       '@protobuf-ts/runtime': 2.7.0
       '@protobuf-ts/runtime-rpc': 2.7.0
